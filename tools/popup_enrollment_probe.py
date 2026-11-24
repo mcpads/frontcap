@@ -1,0 +1,7 @@
+#!/usr/bin/env python3
+"""Run the opt-in popup enrollment probe (P06) outside the default test suite."""
+from cookie_clock_probe import run_probe
+
+
+if __name__ == "__main__":
+    raise SystemExit(run_probe("popup_enrollment_probe", "POPUP_PROBE "))

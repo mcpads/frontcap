@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>stream2</title>
+<script>
+  // Streams opened on request (`openAll()`), for instants away from the document load.
+  window.log = [];
+  const at = () => Math.round(performance.now());
+  window.openAll = () => {
+    const es = new EventSource("https://api.example.test/feed?topics=a,b&x");
+    window.es = es;
+    es.onopen = () => log.push(["sse-open", at()]);
+    es.onmessage = (e) => log.push(["sse", e.data, e.lastEventId, at()]);
+    es.onerror = () => log.push(["sse-error", es.readyState, at()]);
+    const ws = new WebSocket("wss://api.example.test/chat");
+    window.ws = ws;
+    ws.onopen = () => log.push(["ws-open", at()]);
+    ws.onmessage = (e) => log.push(["ws", e.data, at()]);
+    ws.onerror = () => log.push(["ws-error", at()]);
+    ws.onclose = (e) => log.push(["ws-close", e.code, e.wasClean, at()]);
+    return 0;
+  };
+  window.openLater = (ms) => { setTimeout(openAll, ms); return 0; };
+  if (location.search.includes("open")) openAll();
+  if (location.search.includes("frame")) {
+    const f = document.createElement("iframe");
+    f.srcdoc = "<script>const s = new EventSource('https://api.example.test/feed'); s.onmessage = e => parent.log.push(['child-message', e.data]); s.onerror = () => parent.log.push(['child-error', s.readyState]);<\/script>";
+    document.body ? document.body.appendChild(f) : document.documentElement.appendChild(f);
+  }
+</script>

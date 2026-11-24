@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>widget</title>
+<body style="margin:0; font: 14px sans-serif">
+<button id="go" style="margin: 7px 11px">Upgrade</button>
+<label>Plan <select id="plan"><option value="basic">Basic</option><option value="pro">Pro</option></select></label>
+<label>Coupon <input id="coupon"></label>
+<p id="out"></p>
+<script>
+  const out = document.getElementById("out");
+  window.log = [];
+  for (const t of ["pointerdown", "click", "keydown", "change"]) addEventListener(t, (e) => log.push(t + ":" + (e.target.id || e.target.localName)), true);
+  document.getElementById("go").addEventListener("click", () => setTimeout(() => { out.textContent = "upgraded"; parent.postMessage("upgraded", "*"); }, 100));
+  document.getElementById("plan").addEventListener("change", (e) => { out.textContent = "plan " + e.target.value; });
+  document.getElementById("coupon").addEventListener("keydown", (e) => { if (e.key === "Enter") out.textContent = "coupon " + e.target.value; });
+</script>
+</body>

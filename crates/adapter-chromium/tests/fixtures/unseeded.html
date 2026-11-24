@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>unseeded</title>
+<p id="out"></p>
+<script>
+  window.worker = () => {
+    const src = "postMessage(Array.from(crypto.getRandomValues(new Uint8Array(4))).join(','))";
+    const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = (e) => { document.getElementById("out").textContent = e.data; };
+  };
+  window.subtle = () => crypto.subtle.generateKey({ name: "AES-GCM", length: 128 }, true, ["encrypt"]).then(() => { document.getElementById("out").textContent = "key"; });
+</script>

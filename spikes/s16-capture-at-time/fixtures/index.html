@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>s16</title>
+<style>#box { width: 100px; height: 100px; background: red; transition: opacity 400ms linear; }
+#save { position: absolute; left: 10px; top: 150px; width: 100px; height: 30px; }</style>
+<div id="box"></div><button id="save">save</button><p id="out"></p>
+<script>
+  window.rafs = [];
+  const loop = (ts) => { rafs.push(Math.round(ts)); if (rafs.length < 200) requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+  setTimeout(() => { document.getElementById("box").style.opacity = "0"; }, 100);
+  document.getElementById("save").addEventListener("click", async () => {
+    const r = await fetch("https://api.example.test/x");
+    window.__resp = Date.now() - 946684800000;
+    document.getElementById("out").textContent = await r.text();
+  });
+</script>

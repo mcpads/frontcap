@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Execution checkpoint oracle: a popup</title>
+<button id="open">Open the window</button>
+<button id="step">Change hidden state</button>
+<script>
+(() => {
+  let win = null;
+  document.querySelector('#open').onclick = () => { win = open('checkpoint-popup-window.html', 'details'); };
+  document.querySelector('#step').onclick = () => win.postMessage('step', '*');
+})();
+</script>

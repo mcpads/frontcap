@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>gif toggle</title>
+<style>.spin { width: 24px; height: 24px; border: 3px solid #ccc; border-top-color: #333; border-radius: 50%;
+  animation: spin 600ms linear infinite; display: inline-block; } @keyframes spin { to { transform: rotate(360deg); } }
+.hidden { display: none; }</style>
+<p id="box"><img src="spinner.gif" width="32" height="32"> <span class="spin"></span></p>
+<p id="n">0</p>
+<script>
+  const only = new URLSearchParams(location.search).get("only");
+  if (only === "gif") document.querySelector(".spin").remove();
+  if (only === "css") document.querySelector("img").remove();
+  if (only === "text") { document.querySelector(".spin").remove(); document.querySelector("img").remove(); }
+  // An animated image and a CSS spinner shown and hidden at varying intervals, the page changing as well.
+  let n = 0;
+  const flip = () => {
+    document.querySelector("#box").classList.toggle("hidden");
+    document.querySelector("#n").textContent = String(++n);
+    setTimeout(flip, 37 + (n % 5) * 23);
+  };
+  setTimeout(flip, 50);
+</script>

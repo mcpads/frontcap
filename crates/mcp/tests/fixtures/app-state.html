@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Cart</title>
+<p id="count">0 items</p><p id="user">signed out</p><p id="notes"></p>
+<button id="remember" onclick="document.cookie = 'remember=yes; path=/'; localStorage.setItem('remembered', 'yes')">Remember me</button>
+<button id="clear" onclick="if (confirm('Clear the cart?')) { state.items = []; render(); }">Clear cart</button>
+<script>
+// A small store and the providers it registers: the cart (readable and writable), the session (read only),
+// a sync service whose write answers later (a timer), notes persisted to IndexedDB (a write settles when its
+// transaction completes; reads come from memory) and a profile read through a promise.
+const state = { items: [], user: null };
+const render = () => {
+  document.getElementById('count').textContent = `${state.items.length} items`;
+  document.getElementById('user').textContent = state.user ? `signed in as ${state.user}` : 'signed out';
+};
+frontcapState.register({ id: 'cart', description: 'the items in the cart', read() { return { items: state.items }; }, write(value) { state.items = value.items; render(); } });
+frontcapState.register({ id: 'session', read: () => ({ user: state.user }) });
+if (location.search !== '?live') frontcapState.register({ id: 'sync', max_ms: 200, read: () => ({ pending: state.pending || 0 }), write: (value) => new Promise((done) => setTimeout(() => { state.pending = value.pending; done(); }, 100)) });
+const notes = { text: '' };
+const database = new Promise((done) => {
+  const open = indexedDB.open('app', 1);
+  open.onupgradeneeded = () => open.result.createObjectStore('notes');
+  open.onsuccess = () => done(open.result);
+});
+frontcapState.register({ id: 'notes', read: () => ({ text: notes.text }), write: (value) => database.then((db) => new Promise((done, fail) => {
+  const tx = db.transaction('notes', 'readwrite');
+  tx.objectStore('notes').put(value.text, 'text');
+  tx.oncomplete = () => { notes.text = value.text; document.getElementById('notes').textContent = value.text; done(); };
+  tx.onerror = () => fail(tx.error);
+})) });
+frontcapState.register({ id: 'profile', read: () => Promise.resolve({ plan: 'pro' }) });
+render();
+</script>

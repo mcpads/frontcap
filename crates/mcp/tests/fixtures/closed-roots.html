@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Closed roots</title>
+<buy-button></buy-button>
+<promo-banner><template shadowrootmode="closed"><strong id="promo">Free shipping</strong></template></promo-banner>
+<p id="out">idle</p>
+<div id="later"></div>
+<script>
+  customElements.define('buy-button', class extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachShadow({ mode: 'closed' });
+      root.innerHTML = '<label>Qty <input id="qty" data-testid="qty" value="1"></label><button id="buy">Buy now</button>';
+      root.querySelector('#buy').onclick = () => {
+        document.getElementById('out').textContent = 'bought ' + root.querySelector('#qty').value;
+      };
+    }
+  });
+  // A closed root attached later, by a timer, as a lazily rendered component would be.
+  setTimeout(() => {
+    document.getElementById('later').attachShadow({ mode: 'closed' }).innerHTML = '<span id="toast">Added to cart</span>';
+  }, 700);
+  window.pageSees = () => document.querySelector('buy-button').shadowRoot;
+</script>

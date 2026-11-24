@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>delayed scripts</title>
+<p id="status">waiting</p>
+<script>
+window.events = [];
+setTimeout(() => events.push(['timer', performance.now()]), 50);
+const kind = new URL(location.href).searchParams.get('kind');
+const url = 'https://scripts.test/entry.js';
+if (kind === 'inserted') {
+  const script = document.createElement('script');
+  script.src = url;
+  document.head.append(script);
+} else {
+  const attribute = kind === 'module' ? 'type="module"' : kind === 'async' ? 'async' : '';
+  document.write('<script ' + attribute + ' src="' + url + '"><\/script>');
+}
+</script>
+<p id="after">parsed after script</p>

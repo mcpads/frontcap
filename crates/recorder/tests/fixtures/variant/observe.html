@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>observe, changed</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; } #cancel { left: 200px; }</style>
+<!-- The variant build: a Cancel button now comes first, where Save was. -->
+<button id="cancel">Cancel</button><button id="ok">Save</button><p id="count" style="position:absolute;top:80px">0</p>
+<script>
+  let n = 0;
+  document.getElementById("ok").addEventListener("click", () => { document.getElementById("count").textContent = String(++n); });
+  setTimeout(() => console.log("ready"), 100);
+  setTimeout(() => console.error("broken"), 150);
+</script>

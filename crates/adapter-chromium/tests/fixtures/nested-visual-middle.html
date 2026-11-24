@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>middle frame</title>
+<style>
+body { margin:0; }
+iframe { position:absolute; left:40px; top:30px; width:220px; height:160px; border:8px solid green;
+  transform:translate(240px,0) rotate(90deg) scale(.5); transform-origin:0 0; }
+</style>
+<iframe id="inner"></iframe>
+<script>
+const leaf = new URL('nested-visual-leaf.html', location.href);
+leaf.hostname = 'localhost';
+document.querySelector('#inner').src = leaf.href;
+</script>

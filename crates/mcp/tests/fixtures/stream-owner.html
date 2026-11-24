@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Stream owner</title>
+<button id="open">Open another stream</button><button id="close">Close first stream</button><button id="send">Send</button><button id="open-close">Open and immediately close</button><output id="events">[]</output>
+<script>
+const events=[],streams=[];let next=0;
+function openStream(){
+  const id=++next,s=new EventSource('https://api.example.test/feed');
+  streams.push(s);
+  const record=(kind,data)=>{events.push([id,kind,data,Math.round(performance.now())]);document.querySelector('#events').textContent=JSON.stringify(events)};
+  s.onopen=()=>record('open',null);
+  s.onmessage=e=>record('message',e.data);
+  s.onerror=()=>record('error',null);
+  s.onclose=e=>record('close',e.code);
+}
+document.querySelector('#open').onclick=openStream;
+document.querySelector('#close').onclick=()=>streams[0].close();
+document.querySelector('#send').onclick=()=>streams[0].send('child-send');
+document.querySelector('#open-close').onclick=()=>{openStream();streams.at(-1).close()};
+openStream();
+</script>

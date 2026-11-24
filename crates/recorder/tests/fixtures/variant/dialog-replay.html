@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>Dialog replay</title>
+<button id="start">Start</button>
+<iframe srcdoc="<!doctype html><title>Dialog owner</title>"></iframe>
+<script>
+window.answers=[];
+start.onclick=()=>setTimeout(()=>{
+  const owner=document.querySelector('iframe')?.contentWindow ?? window;
+  answers.push(owner.confirm('approve'));
+  answers.push(owner.prompt('name','default'));
+},10);
+</script>

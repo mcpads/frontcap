@@ -1,0 +1,12 @@
+<!doctype html><title>Loads of a worker and a frame</title>
+<script>
+window.delivered = [];
+// A dedicated worker fetches at 100 ms; a frame of another origin is added at 200 ms.
+const worker = new Worker('interception-worker.js');
+worker.onmessage = (e) => delivered.push(e.data);
+setTimeout(() => {
+  const frame = document.createElement('iframe');
+  frame.src = 'https://frame.example.test/';
+  document.body.append(frame);
+}, 200);
+</script>

@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>native buttons</title>
+<style>body { margin: 0; } #pad { position: absolute; left: 20px; top: 20px; width: 240px; height: 140px; background: silver; touch-action: none; }</style>
+<div id="pad" draggable="true">pointer target</div>
+<script>
+window.buttons = [];
+const pad = document.querySelector('#pad');
+for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel', 'contextmenu', 'click', 'auxclick', 'lostpointercapture']) {
+  pad.addEventListener(type, e => {
+    if (type === 'contextmenu' || type === 'auxclick') e.preventDefault();
+    if (type === 'pointerdown') pad.setPointerCapture(e.pointerId);
+    buttons.push([type, e.button, e.buttons, e.isTrusted, Math.round(performance.now())]);
+  });
+}
+</script>

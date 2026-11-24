@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Held</title>
+<style>body { margin: 0; } #pad { position: absolute; left: 0; top: 100px; width: 300px; height: 100px; }</style>
+<input id="field" aria-label="Field">
+<div id="pad"></div>
+<script>
+  // Keys, compositions and touches as the page receives them: [type, key or data, shiftKey].
+  window.seen = [];
+  window.nativeSeen = [];
+  window.cleanupTimer = false;
+  window.cleanupFrame = false;
+  addEventListener('touchstart', () => {
+    setTimeout(() => { cleanupTimer = true; }, 1);
+    requestAnimationFrame(() => { cleanupFrame = true; });
+  }, {once:true});
+  for (const type of ["keydown", "keyup", "compositionstart", "compositionend", "touchstart", "touchend", "touchcancel"]) {
+    addEventListener(type, (e) => seen.push([type, e.key ?? e.data ?? null, e.shiftKey ?? null]), true);
+    addEventListener(type, (e) => nativeSeen.push([type, e.isTrusted, e.timeStamp]), true);
+  }
+</script>

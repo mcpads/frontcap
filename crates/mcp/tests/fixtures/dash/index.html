@@ -1,0 +1,109 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>dashboard</title>
+<style>
+  body { font: 14px sans-serif; margin: 0; }
+  header { display: flex; gap: 16px; padding: 8px 12px; background: #234; color: #fff; align-items: center; }
+  main { display: grid; grid-template-columns: 1fr 260px; gap: 12px; padding: 12px; }
+  #feed { height: 200px; overflow: auto; border: 1px solid #ccc; }
+  .item { padding: 6px; border-bottom: 1px solid #eee; }
+  #tooltip { position: absolute; background: #333; color: #fff; padding: 4px 6px; font-size: 12px; }
+  .hidden { display: none; }
+  .label { display: inline-block; margin-right: 12px; cursor: default; }
+  iframe { border: 1px solid #ccc; width: 240px; }
+  #billing { height: 70px; }
+  #notes { height: 60px; }
+</style></head>
+<body>
+<header><strong>Dashboard</strong>
+  <label>Range <select id="range"><option value="7d">7 days</option><option value="30d">30 days</option></select></label>
+  <label><input id="only-errors" type="checkbox"> Only errors</label>
+  <span id="live" role="status">connecting</span>
+  <span id="plan">Plan: Basic</span>
+</header>
+<main>
+  <section>
+    <h2>Requests</h2>
+    <canvas id="chart" width="360" height="120"></canvas>
+    <p id="chart-state">loading</p>
+    <div id="labels"></div>
+    <div id="tooltip" class="hidden" role="tooltip"></div>
+  </section>
+  <aside>
+    <h2>Activity</h2>
+    <div id="feed" role="list"><div id="sentinel"></div></div>
+    <h2>Billing</h2>
+    <!-- Another origin's widget, as a payment provider's is. -->
+    <iframe id="billing" title="Billing" src="https://billing.dash.test/widget.html"></iframe>
+    <h2>Notes</h2>
+    <!-- An editor in a frame of its own, as rich text editors are. -->
+    <iframe id="notes" title="Notes" srcdoc="<body class=note contenteditable style='margin:4px;font:13px sans-serif'></body>"></iframe>
+    <p id="note-count">0 chars</p>
+  </aside>
+</main>
+<script>
+  const api = "https://api.dash.test";
+  const $ = (s) => document.querySelector(s);
+  const saved = localStorage.getItem("range");
+  if (saved) $("#range").value = saved;
+
+  let anim;
+  async function loadStats() {
+    const q = "?range=" + $("#range").value + ($("#only-errors").checked ? "&errors=1" : "");
+    $("#chart-state").textContent = "loading";
+    const stats = await (await fetch(api + "/stats" + q)).json();
+    $("#labels").replaceChildren(...stats.map((s) => {
+      const l = document.createElement("span");
+      l.className = "label"; l.textContent = s.day; l.dataset.n = s.n;
+      l.addEventListener("mouseenter", () => { clearTimeout(window.tip); window.tip = setTimeout(() => {
+        const t = $("#tooltip"); t.textContent = s.day + ": " + s.n + " requests"; t.classList.remove("hidden");
+        const r = l.getBoundingClientRect(); t.style.left = r.left + "px"; t.style.top = (r.bottom + 4) + "px"; }, 300); });
+      l.addEventListener("mouseleave", () => { clearTimeout(window.tip); $("#tooltip").classList.add("hidden"); });
+      return l;
+    }));
+    // Bars grow over 400 ms, drawn on a canvas each animation frame.
+    cancelAnimationFrame(anim);
+    const ctx = $("#chart").getContext("2d");
+    const max = Math.max(...stats.map((s) => s.n));
+    const start = performance.now();
+    const draw = (now) => {
+      const f = Math.min(1, (now - start) / 400);
+      ctx.clearRect(0, 0, 360, 120);
+      stats.forEach((s, i) => { ctx.fillStyle = "#4a7"; const h = (s.n / max) * 110 * f; ctx.fillRect(10 + i * 50, 120 - h, 36, h); });
+      if (f < 1) anim = requestAnimationFrame(draw); else $("#chart-state").textContent = "ready " + stats.length;
+    };
+    anim = requestAnimationFrame(draw);
+  }
+  $("#range").addEventListener("change", () => { localStorage.setItem("range", $("#range").value); loadStats(); });
+  $("#only-errors").addEventListener("change", loadStats);
+  loadStats();
+
+  // Infinite scroll: the next page when the sentinel comes into view.
+  let page = 0, loading = false;
+  new IntersectionObserver(async (entries) => {
+    if (!entries[0].isIntersecting || loading || page >= 3) return;
+    loading = true;
+    const items = await (await fetch(api + "/items?page=" + (++page))).json();
+    for (const it of items) {
+      const d = document.createElement("div"); d.className = "item"; d.setAttribute("role", "listitem"); d.textContent = it;
+      $("#feed").insertBefore(d, $("#sentinel"));
+    }
+    loading = false;
+  }, { root: $("#feed") }).observe($("#sentinel"));
+
+  // The widget says when the plan changed; the editor's text is counted as it is typed.
+  addEventListener("message", (e) => { if (e.data && e.data.upgraded) $("#plan").textContent = "Plan: Pro"; });
+  const notes = $("#notes");
+  const hookNotes = () => {
+    const body = notes.contentDocument && notes.contentDocument.body;
+    if (!body || !body.classList.contains("note") || body.dataset.hooked) return;
+    body.dataset.hooked = "1";
+    body.addEventListener("input", () => { $("#note-count").textContent = body.textContent.length + " chars"; });
+  };
+  notes.addEventListener("load", hookNotes);
+  hookNotes();
+
+  // Live numbers over a WebSocket.
+  const ws = new WebSocket("wss://api.dash.test/live");
+  ws.onmessage = (e) => { $("#live").textContent = "users: " + e.data; };
+</script>
+</body></html>

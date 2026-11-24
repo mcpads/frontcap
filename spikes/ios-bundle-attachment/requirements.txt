@@ -1,0 +1,2 @@
+# Preparation-only dependency; installed consumer apps do not need Python or LIEF.
+lief==1.0.0

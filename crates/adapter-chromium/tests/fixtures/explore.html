@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Stopped world</title>
+<style>
+  #panel { width: 160px; height: 80px; background: navy; opacity: 1; transition: opacity 80ms linear; }
+  #panel.changed { opacity: .4; }
+</style>
+<button id="change">Change</button>
+<input id="name" aria-label="Name" value="Ada">
+<div id="panel" data-timer="0" data-frame="0" data-microtask="0">Before</div>
+<script>
+  const panel = document.querySelector('#panel');
+  document.querySelector('#change').onclick = () => {
+    panel.textContent = 'Changed';
+    panel.classList.add('changed');
+    queueMicrotask(() => { panel.dataset.microtask = '1'; console.log('microtask'); });
+    requestAnimationFrame(() => { panel.dataset.frame = '1'; console.log('frame'); });
+    setTimeout(() => { panel.dataset.timer = '1'; console.log('timer'); }, 120);
+  };
+  panel.addEventListener('transitionend', () => console.log('transition-end'));
+</script>

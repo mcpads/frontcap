@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>State receipts</title>
+<state-counter id="widget"></state-counter><output id="calls">0</output>
+<script>
+  let calls = 0;
+  customElements.define('state-counter', class extends HTMLElement {
+    static observedAttributes = ['data-touch'];
+    attributeChangedCallback() {
+      calls += 1;
+      document.querySelector('#calls').textContent = String(calls);
+    }
+  });
+</script>

@@ -1,0 +1,33 @@
+{
+  "xctest": {
+    "simulator": {
+      "xcrun": "/unused/xcrun",
+      "runtime": "fixture",
+      "device_type": "fixture",
+      "source_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "xcodebuild": "/unused/xcodebuild",
+    "products": "/unused/products",
+    "manifest": {
+      "xctestrun": "fixture.xctestrun",
+      "directories": [],
+      "files": {},
+      "names": {
+        "app": "Client",
+        "tests": "ClientTests"
+      }
+    },
+    "app": {
+      "bundle": "org.example.client",
+      "runner_bundle": "org.example.client.tests.xctrunner",
+      "test_identifier": "ClientTests/Bridge/testSession",
+      "ui_descriptor": "Documents/ui-control.json",
+      "clock_descriptor": "Documents/clock-control.json"
+    }
+  },
+  "python": "/unused/python3",
+  "ui_script": "/unused/ui.py",
+  "clock_script": "/unused/clock.py",
+  "controller_id": "58e8003c-c32d-49f2-a4d3-628724d76b41",
+  "surface": "uikit"
+}

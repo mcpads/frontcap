@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>color held</title>
+<style>html, body { margin: 0; height: 100%; }</style>
+<button id="go" style="position:absolute;left:300px;top:300px;width:100px;height:40px">go</button>
+<script>
+  // A request held for the whole test keeps every advance in short segments; the background changes
+  // colour at 25, 50, 75, … ms, so each segment end has its own colour.
+  fetch("https://api.example.test/held").catch(() => {});
+  const colors = ["rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(0,255,255)", "rgb(255,0,255)", "rgb(0,0,0)"];
+  let k = 0;
+  const paint = () => { document.documentElement.style.background = colors[k % colors.length]; };
+  paint();
+  setInterval(() => { k++; paint(); }, 25);
+  document.getElementById("go").addEventListener("click", () => { document.documentElement.style.background = "rgb(255,255,255)"; });
+</script>

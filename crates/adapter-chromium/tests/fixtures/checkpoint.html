@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Execution checkpoint oracle</title>
+<button id="step">Change hidden state</button>
+<button id="arm">Arm continuation</button>
+<output id="ready">starting</output>
+<output id="timer">pending</output>
+<output id="worker">pending</output>
+<output id="response">pending</output>
+<script>
+(() => {
+  // Intentionally not exported through window, DOM or storage. A saved execution must retain
+  // both this closure and the worker's separate heap; reconstruction from visible state cannot.
+  let secret = 0;
+  const worker = new Worker('checkpoint-worker.js');
+  worker.onmessage = ({data}) => {
+    if (data === 'ready') document.querySelector('#ready').textContent = 'ready';
+    else document.querySelector('#worker').textContent = String(data);
+  };
+  document.querySelector('#step').onclick = () => {
+    secret++;
+    worker.postMessage('step');
+  };
+  document.querySelector('#arm').onclick = () => {
+    setTimeout(() => document.querySelector('#timer').textContent = String(secret), 300);
+    worker.postMessage('arm');
+    fetch('checkpoint-held').then(r => r.text()).then(body => {
+      document.querySelector('#response').textContent = `${body}:${secret}`;
+    });
+  };
+})();
+</script>

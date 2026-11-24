@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>response before its frame</title>
+<style>#box { width:50px; height:50px; opacity:0; transition:opacity 200ms linear; } #box.on { opacity:1; }</style>
+<div id="box"></div>
+<script>
+const events = [];
+const stamp = name => events.push([name, Date.now() - 946684800000]);
+const box = document.querySelector('#box');
+for (const type of ['transitionrun', 'transitionend']) box.addEventListener(type, () => stamp(type));
+window.start = (hold, readBody) => {
+  if (hold) fetch('https://api.example.test/never');
+  stamp('request');
+  fetch('https://api.example.test/go').then(async response => {
+    if (readBody) await response.text();
+    stamp('response');
+    requestAnimationFrame(() => {
+      stamp('frame1');
+      requestAnimationFrame(() => { stamp('frame2'); box.classList.add('on'); });
+    });
+  });
+};
+window.evidence = () => events;
+</script>

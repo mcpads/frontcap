@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>worker clock</title>
+<script>
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `postMessage(["start", Date.now() - 946684800000]); setTimeout(() => postMessage(["t30", Date.now() - 946684800000]), 30); setTimeout(() => postMessage(["t200", Date.now() - 946684800000]), 200);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

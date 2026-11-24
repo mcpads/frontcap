@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>Shop with a chat widget</title>
+<p id="count">0 items</p>
+<iframe id="chat" srcdoc="<p id=unread>0 unread</p><script>let unread = 0; frontcapState.register({ id: 'chat', read: () => ({ unread }), write(v) { unread = v.unread; document.getElementById('unread').textContent = unread + ' unread'; } });</script>"></iframe>
+<script>
+let items = [];
+frontcapState.register({ id: 'cart', read: () => ({ items }), write(v) { items = v.items; document.getElementById('count').textContent = items.length + ' items'; } });
+</script>

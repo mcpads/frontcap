@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>drag</title>
+<style>
+  body { margin: 0; }
+  #handle { position: absolute; left: 20px; top: 20px; width: 40px; height: 40px; background: red; touch-action: none; }
+  #src { position: absolute; left: 20px; top: 120px; width: 60px; height: 40px; background: blue; }
+  #dst { position: absolute; left: 220px; top: 120px; width: 100px; height: 100px; background: green; }
+  #f { position: absolute; left: 20px; top: 260px; }
+</style>
+<div id="handle"></div>
+<div id="src" draggable="true">drag me</div>
+<div id="dst"></div>
+<input id="f" type="file" multiple>
+<script>
+  window.log = [];
+  const at = () => Math.round(performance.now());
+  const h = document.getElementById("handle");
+  let down = null;
+  h.addEventListener("pointerdown", e => { down = [e.clientX - h.offsetLeft, e.clientY - h.offsetTop]; h.setPointerCapture(e.pointerId); log.push(["pointerdown", e.clientX, e.clientY, at()]); });
+  h.addEventListener("pointermove", e => { log.push(["pointermove", e.clientX, e.clientY, e.buttons, at()]); if (down) { h.style.left = (e.clientX - down[0]) + "px"; } });
+  h.addEventListener("pointerup", e => { down = null; log.push(["pointerup", e.clientX, e.clientY, at()]); });
+  const s = document.getElementById("src"), d = document.getElementById("dst");
+  s.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", "payload"); log.push(["dragstart", at()]); });
+  s.addEventListener("dragend", e => log.push(["dragend", e.dataTransfer.dropEffect, at()]));
+  d.addEventListener("dragenter", e => { e.preventDefault(); log.push(["dragenter", at()]); });
+  d.addEventListener("dragover", e => { e.preventDefault(); log.push(["dragover", at()]); });
+  d.addEventListener("drop", e => { e.preventDefault(); log.push(["drop", e.dataTransfer.getData("text/plain"), [...e.dataTransfer.files].map(f => f.name), at()]); });
+  const f = document.getElementById("f");
+  for (const k of ["input", "change", "cancel"]) f.addEventListener(k, () => log.push([k, [...f.files].map(x => [x.name, x.size, x.type, x.lastModified]), at()]));
+</script>

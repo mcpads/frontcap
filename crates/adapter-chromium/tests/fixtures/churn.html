@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>churn</title>
+<p id="flip">flip</p>
+<script>
+  let n = 0;
+  const id = setInterval(() => { document.getElementById("flip").classList.toggle("odd"); if (++n === 40) clearInterval(id); }, 10);
+  setTimeout(() => { location.href = "nav2.html"; }, 500);
+</script>

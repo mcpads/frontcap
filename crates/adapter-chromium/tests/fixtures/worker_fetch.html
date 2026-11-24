@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>worker fetch</title>
+<script>
+  // A dedicated worker that fetches at 30 ms of its own clock and reports what it got and when.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `setTimeout(() => fetch("https://api.example.test/w").then(r => r.text()).then(b => postMessage([b, Date.now() - 946684800000]), e => postMessage(["failed", Date.now() - 946684800000])), 30);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

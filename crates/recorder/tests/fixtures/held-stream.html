@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8">
+<p id="state">connecting</p><p id="items"></p>
+<script>
+  let opens = 0;
+  const feed = new EventSource("https://api.example.test/chat");
+  feed.onopen = () => { document.getElementById("state").textContent = "live " + (++opens); };
+  feed.onmessage = (e) => { document.getElementById("items").textContent += e.data; };
+</script>

@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>leave</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }</style>
+<button id="go">Leave</button>
+<script>
+  window.addEventListener("beforeunload", (e) => { e.preventDefault(); e.returnValue = "unsaved"; });
+  document.getElementById("go").addEventListener("click", () => setTimeout(() => { location.href = "nav2.html"; }, 10));
+</script>

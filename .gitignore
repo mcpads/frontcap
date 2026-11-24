@@ -1,0 +1,20 @@
+# Run evidence, runtime registry, and cassettes may contain app data or large frame sequences.
+.frontcap/
+
+# Pinned browser downloads and container build context
+/browsers/
+
+# Rust
+target/
+
+# Python test tooling
+__pycache__/
+
+# macOS
+.DS_Store
+
+# Spike reports
+spikes/results/
+
+# Local material that is not published
+.private/

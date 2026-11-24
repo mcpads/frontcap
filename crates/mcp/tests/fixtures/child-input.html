@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>Child input lifecycle</title>
+<input id="parent" aria-label="Parent input"><output id="events">[]</output><output id="timer">pending</output>
+<script>
+if (location.search.startsWith('?child')) {
+  document.querySelector('#parent').remove();
+  const host = document.createElement('div');
+  document.body.append(host);
+  const root = location.search.includes('shadow') ? host.attachShadow({mode:'open'}) : host;
+  root.innerHTML = '<input id="editor" aria-label="Child editor">';
+  const editor = root.querySelector('#editor');
+  const events = [];
+  for (const type of ['keydown','keyup','compositionstart','compositionupdate','compositionend','input']) {
+    editor.addEventListener(type, e => {
+      events.push({type,key:e.key||null,code:e.code||null,repeat:!!e.repeat,location:e.location||0,shift:!!e.shiftKey,trusted:e.isTrusted,composing:!!e.isComposing,time:Date.now()-946684800000});
+      document.querySelector('#events').textContent=JSON.stringify(events);
+      if (type==='input') setTimeout(()=>document.querySelector('#timer').textContent='fired',50);
+    });
+  }
+} else {
+  const frame = document.createElement('iframe');
+  frame.id='child';frame.width='500';frame.height='200';
+  frame.src=`http://localhost:${location.port}${location.pathname}?child${location.search.includes('shadow')?'-shadow':''}`;
+  document.body.append(frame);
+  const remove=document.createElement('button');
+  remove.id='remove';remove.textContent='Remove child';
+  remove.onclick=()=>setTimeout(()=>frame.remove(),50);
+  document.body.append(remove);
+}
+</script>

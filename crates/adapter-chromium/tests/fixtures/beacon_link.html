@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>beacon link</title>
+<!-- An outbound link whose click handler reports to analytics before the page leaves, as sites do. -->
+<a id="out" href="https://next.test/page">Next</a>
+<script>
+  document.getElementById("out").addEventListener("click", () => {
+    fetch("https://api.test/k", { method: "POST", body: "k", keepalive: true });
+    navigator.sendBeacon("https://api.test/b", "b");
+    fetch("https://api.test/p");
+  });
+</script>

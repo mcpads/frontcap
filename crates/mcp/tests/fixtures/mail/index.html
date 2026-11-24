@@ -1,0 +1,99 @@
+<!doctype html><meta charset="utf-8"><title>Mail</title>
+<meta name="viewport" content="width=device-width">
+<style>
+  body { font: 14px system-ui; margin: 0; padding: 8px; }
+  #search { width: 260px; }
+  ul { list-style: none; padding: 0; margin: 8px 0; width: 320px; }
+  li { overflow: hidden; }
+  .msg { display: block; width: 100%; text-align: left; padding: 6px; border: 1px solid #ccc; background: #fff;
+         touch-action: pan-y; }
+  .msg[aria-selected="true"] { background: #cde; }
+  .hint { display: none; margin-left: 6px; font-size: 11px; color: #a00; }
+  body.hints .hint { display: inline; }
+  #menu { position: fixed; background: #fff; border: 1px solid #333; padding: 4px; }
+  #menu[hidden] { display: none; }
+</style>
+<p>
+  <input id="search" aria-label="Search mail" autocomplete="off">
+  <span id="composing"></span>
+</p>
+<p id="searched"></p>
+<ul id="list" role="listbox" aria-label="Messages" aria-multiselectable="true"></ul>
+<p id="selection" role="status">0 selected</p>
+<p id="archived"></p>
+<div id="menu" role="menu" aria-label="Message actions" hidden>
+  <button role="menuitem" id="archive">Archive</button>
+</div>
+<script>
+  // A mail app, as a person uses it: click selects one message, Shift+click a range, Control+click
+  // toggles one; holding Alt shows keyboard hints; a right click or a long press (500 ms) opens a menu;
+  // swiping a message left by more than 80 px archives it; the search waits for a finished composition
+  // (Korean input), so Enter while composing does not search.
+  const $ = (id) => document.getElementById(id);
+  const subjects = ["서울 출장", "Invoice", "Lunch", "서류 검토", "Weekly report", "Party"];
+  let messages = subjects.map((s, i) => ({ id: i, subject: s })), selected = new Set(), anchor = null, menuFor = null;
+  const render = () => {
+    const q = $("search").dataset.query || "";
+    $("list").replaceChildren(...messages.filter((m) => m.subject.includes(q)).map((m) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      li.setAttribute("role", "none");
+      b.className = "msg"; b.setAttribute("role", "option"); b.dataset.id = m.id;
+      b.setAttribute("aria-selected", String(selected.has(m.id)));
+      b.append(m.subject);
+      const hint = document.createElement("span"); hint.className = "hint"; hint.textContent = "Alt+" + (m.id + 1);
+      b.append(hint);
+      li.append(b);
+      return li;
+    }));
+    $("selection").textContent = selected.size + " selected";
+  };
+  $("list").addEventListener("click", (e) => {
+    const b = e.target.closest(".msg"); if (!b) return;
+    const id = Number(b.dataset.id);
+    if (e.shiftKey && anchor !== null) {
+      const ids = messages.map((m) => m.id), [a, z] = [ids.indexOf(anchor), ids.indexOf(id)].sort((x, y) => x - y);
+      selected = new Set(ids.slice(a, z + 1));
+    } else if (e.ctrlKey || e.metaKey) {
+      selected.has(id) ? selected.delete(id) : selected.add(id); anchor = id;
+    } else { selected = new Set([id]); anchor = id; }
+    render();
+  });
+  // Keyboard hints while Alt is held.
+  addEventListener("keydown", (e) => { if (e.key === "Alt") document.body.classList.add("hints"); });
+  addEventListener("keyup", (e) => { if (e.key === "Alt") document.body.classList.remove("hints"); });
+  addEventListener("blur", () => document.body.classList.remove("hints"));
+  // The menu: right click, or a long press.
+  const openMenu = (b, x, y) => { menuFor = Number(b.dataset.id); $("menu").style.left = x + "px"; $("menu").style.top = y + "px"; $("menu").hidden = false; };
+  $("list").addEventListener("contextmenu", (e) => { const b = e.target.closest(".msg"); if (!b) return; e.preventDefault(); openMenu(b, e.clientX, e.clientY); });
+  const archive = (id) => { messages = messages.filter((m) => m.id !== id); selected.delete(id); $("archived").textContent = "Archived " + subjects[id]; render(); };
+  $("archive").onclick = () => { $("menu").hidden = true; archive(menuFor); };
+  // Touch: swipe left to archive, long press for the menu.
+  let touch = null;
+  $("list").addEventListener("touchstart", (e) => {
+    const b = e.target.closest(".msg"); if (!b) return;
+    const t = e.touches[0];
+    touch = { b, x: t.clientX, y: t.clientY, dx: 0, timer: setTimeout(() => { openMenu(b, t.clientX, t.clientY); touch = null; }, 500) };
+  });
+  $("list").addEventListener("touchmove", (e) => {
+    if (!touch) return;
+    touch.dx = e.touches[0].clientX - touch.x;
+    if (Math.abs(touch.dx) > 10) clearTimeout(touch.timer);
+    touch.b.style.transform = "translateX(" + Math.min(0, touch.dx) + "px)";
+  });
+  $("list").addEventListener("touchend", () => {
+    if (!touch) return;
+    clearTimeout(touch.timer);
+    if (touch.dx < -80) archive(Number(touch.b.dataset.id)); else touch.b.style.transform = "";
+    touch = null;
+  });
+  // Search: live while typing, but a composition is searched only once it is finished.
+  $("search").addEventListener("input", (e) => {
+    $("composing").textContent = e.isComposing ? "composing: " + $("search").value : "";
+    if (!e.isComposing) { $("search").dataset.query = $("search").value; render(); }
+  });
+  $("search").addEventListener("compositionend", () => { $("composing").textContent = ""; $("search").dataset.query = $("search").value; render(); });
+  $("search").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.isComposing) $("searched").textContent = "Searched: " + $("search").value;
+  });
+  render();
+</script>

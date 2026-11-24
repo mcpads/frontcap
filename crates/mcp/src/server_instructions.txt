@@ -1,0 +1,21 @@
+Investigate front-end UX through observation, user input and explicit progress. Clock control depends on the selected runtime and capabilities; a native host is not automatically paused.
+
+Choose an entry:
+- Browser: bootstrap, follow next_action, then launch. session list finds existing generations; session reattach acquires control. Check status, clock and taint before relying on controlled time.
+- Android/iOS, including Flutter: call native with {"op":{"type":"describe"}}. Launch through native with explicit platform (android or ios) and runtime (native, flutter, host or webview) matching the configured profile. Read returned readiness and capabilities before app or page operations.
+
+Discover arguments: front-panel tools accept {"describe":true} alone. Drawers accept {"operation":"describe"}, then "of":"<operation>" for details. native uses its own op.type envelope. Use returned schemas, not guessed arguments.
+
+Browser loop: observe, act or change state, wait, then observe again. Check outcomes and time; input completion does not prove navigation or saving. Return opaque references and boundaries unchanged to their issuing generation/context. Refresh stale references. Check image currency before targeting pixels. A quiet queue or exhausted budget does not prove the task succeeded.
+
+Input and alternatives: act sends user input; input describe covers held pointers, keys, composition and wheel. state describe covers document, storage and app-state intervention, including sign-in. Distinguish direct intervention from user behavior. state save records a starting point; state branch explores an alternative; state probe branches and runs bounded steps. Read the basis kind and limits: recipes/replay are not exact live checkpoints. Process images require supported cells.
+
+Progress and network: wait advances, settles, waits for a predicate/watch or stops at an armed event; watch describe defines watches. network describe covers rules, held requests and responses. An unanswered dialog follows session dialog_rules: unmatched dialogs are dismissed and beforeunload leaves. A hold suspends the operation: use session answer_dialog, or network respond/fail for the synchronous request blocking the page. Inspect the resulting suspension before continuing. For a pending browser image, wait next presentation, then capture.
+
+Contexts: session contexts lists popups; browser observe, act, capture, wait, watch, input and state accept context. wait next popup stops at creation. Shared-clock popup paths are supported; isolation-policy renderer changes can leave clocks stale or uncontrolled. Do not assume every popup or replacement document shares the launch clock.
+
+Recovery and completion: bind mutations to request_id. After a lost reply, inspect status and retrieve the original result: browser session result uses operation_id; native result uses the original request_id in op. Pending means unresolved, not failure or permission to repeat an effect. Retry only where the operation permits it, with unchanged arguments and ID; never substitute a new ID for an uncertain action. Reattach through the owning surface before new commands when supported. New observations/polls use new IDs; unknown effects keep their original ID.
+
+Native loop: observe the current owner, use fresh input evidence, progress only supported clocks, then verify the app effect. Host-time budgets and cleanup are separate from app time. URL acceptance is not destination proof; inspect the destination. Page replacement invalidates prior page/input authority. Use native status/result/stop for native launches. Check Stop's retirement result; absent resources alone do not make a pending result complete.
+
+Evidence: debug describe covers evaluation (taints the browser run), histories, result pages, bundles and replay. Separate observed effects from inferred causes and disclose control limits. Browser stop ends a generation; check finalization before replay.

@@ -1,0 +1,35 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
+license = "GPL-2.0-or-later"
+rust-version = "1.99"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.30"
+futures-util = "0.3"
+toml = "1"
+zip = "8"
+sha2 = "0.11"
+tempfile = "3"
+quote = "1"
+proc-macro2 = "1"
+syn = { version = "2", features = ["full"] }
+prettyplease = "0.2"
+heck = "0.5"
+proptest = "1"
+tiny_http = "0.12"
+schemars = "1"
+serde_path_to_error = "0.1"
+png = "0.18"
+
+# Every generation launch checks the engine's files (about 400 MB, twice where a sandbox copy is used)
+# against their manifest digests. Unoptimized, SHA-256 takes about 5 s per copy; optimized, about 0.1 s.
+[profile.dev.package.sha2]
+opt-level = 3

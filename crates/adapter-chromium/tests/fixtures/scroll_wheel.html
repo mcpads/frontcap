@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>scroll wheel</title>
+<style>
+  body { margin: 0; height: 3000px; }
+  #editor { position: absolute; left: 20px; top: 60px; width: 300px; height: 200px; overflow: hidden; background: #eee; }
+  #list { position: absolute; left: 490px; top: 60px; width: 300px; height: 600px; overflow-y: auto; }
+  .row { height: 50px; }
+  #carousel { display: flex; overflow-x: auto; height: 50px; }
+  #carousel div { flex: 0 0 200px; }
+  #lock { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.3); }
+  html.locked { overflow: hidden; }
+  html.locked #lock { display: block; }
+</style>
+<div id="editor">line <span id="line">0</span></div>
+<div id="list"><div id="carousel"><div id="slide">slide 1</div><div>slide 2</div><div>slide 3</div></div></div>
+<div id="lock"></div>
+<script>
+  const list = document.getElementById("list");
+  for (let i = 1; i <= 40; i++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.id = "row-" + i;
+    row.textContent = "row " + i;
+    list.append(row);
+  }
+  // An editor scrolls its own lines by the wheel, as a code editor does.
+  document.getElementById("editor").addEventListener("wheel", (e) => {
+    e.preventDefault();
+    line.textContent = String(Number(line.textContent) + Math.sign(e.deltaY));
+  }, { passive: false });
+</script>

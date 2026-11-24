@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>service worker</title>
+<script>
+  window.__probe = "pending";
+  navigator.serviceWorker.register("sw-worker.js").then(() => navigator.serviceWorker.ready).then(() =>
+    navigator.serviceWorker.controller ? null : new Promise((r) => navigator.serviceWorker.addEventListener("controllerchange", r, { once: true }))
+  ).then(() => fetch("probe.txt")).then((r) => r.text()).then((t) => { window.__probe = t; }, (e) => { window.__probe = "error: " + e; });
+</script>

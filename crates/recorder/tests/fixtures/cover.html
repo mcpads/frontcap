@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>cover</title>
+<style>
+  button { position: absolute; left: 10px; top: 10px; width: 160px; height: 40px; }
+  #veil { position: absolute; left: 0; top: 200px; width: 400px; height: 100px; background: rgba(0,0,0,.3); }
+  #hidden-btn { top: 220px; }
+</style>
+<button id="ok"><span>nested</span> label</button>
+<button id="hidden-btn">covered</button>
+<div id="veil"></div>
+<button id="dis" disabled style="left:200px">disabled</button>
+<button id="off" style="top:5000px">offscreen</button>
+<button class="dup" style="top:400px">a</button><button class="dup" style="top:450px">b</button>
+<script>
+  window.__clicks = [];
+  document.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => window.__clicks.push(b.id || b.className)));
+</script>

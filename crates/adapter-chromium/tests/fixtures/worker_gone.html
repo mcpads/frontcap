@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>workers that never start</title>
+<body><script>
+  // A worker terminated before it started, and one whose frame is removed in the same task: neither stops
+  // the page's clock.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const blob = () => URL.createObjectURL(new Blob(["postMessage(1)"], { type: "text/javascript" }));
+  new Worker(blob()).terminate();
+  const f = document.createElement("iframe");
+  document.body.appendChild(f);
+  f.contentWindow.eval(`new Worker(URL.createObjectURL(new Blob(["postMessage(1)"], { type: "text/javascript" })))`);
+  f.remove();
+  setTimeout(() => got.push(["page50", t(), t()]), 50);
+</script></body>

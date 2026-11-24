@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>mutator</title>
+<style>button{position:absolute;left:10px;top:10px;width:120px;height:40px}</style>
+<body>
+<script>
+  window.__hits = { good: 0, bad: 0 };
+  let gen = 0;
+  function swap() {
+    document.querySelectorAll("button").forEach(b => b.remove());
+    const b = document.createElement("button");
+    b.textContent = "target";
+    b.dataset.gen = String(++gen);
+    b.addEventListener("click", (e) => {
+      // A click is "good" if it lands on the generation that was current when the click task began.
+      if (e.target.dataset.gen === String(gen)) window.__hits.good++; else window.__hits.bad++;
+    });
+    document.body.appendChild(b);
+  }
+  window.__gen = () => gen;
+  swap();
+  if (location.search.includes("raf")) {
+    const loop = () => { swap(); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  } else {
+    const ch = new MessageChannel();
+    ch.port1.onmessage = () => { swap(); ch.port2.postMessage(0); };
+    ch.port2.postMessage(0);
+  }
+</script>
+</body>

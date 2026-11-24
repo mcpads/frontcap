@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>Component editor</title>
+<div id="host"></div>
+<script>
+  const child = location.search === '?child';
+  const root = document.querySelector('#host').attachShadow({mode:'open'});
+  const suffix = child ? 'child' : 'main';
+  root.innerHTML = `<button id="save-${suffix}">Save ${suffix}</button><span id="status-${suffix}" role="status" aria-label="Save status ${suffix}">Idle ${suffix}</span><button id="replace-${suffix}">Replace ${suffix}</button>`;
+  root.querySelector(`#save-${suffix}`).onclick = () => {
+    const status = root.querySelector(`#status-${suffix}`);
+    status.textContent = `Saving ${suffix}`;
+    setTimeout(() => status.textContent = `Saved ${suffix}`, 123);
+  };
+  root.querySelector(`#replace-${suffix}`).onclick = () => {
+    const status = root.querySelector(`#status-${suffix}`);
+    status.replaceWith(status.cloneNode(true));
+  };
+  if (!child) {
+    const frame = document.createElement('iframe');
+    frame.id = 'editor'; frame.width = '500'; frame.height = '150';
+    frame.src = `http://localhost:${location.port}${location.pathname}?child`;
+    (location.search === '?nested-frame' ? root : document.body).append(frame);
+  }
+</script>

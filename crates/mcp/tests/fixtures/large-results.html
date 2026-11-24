@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<p id="large"></p>
+<script>
+document.querySelector('#large').textContent = '한글🙂'.repeat(6000);
+for (let i = 0; i < 24; i++) {
+  console.log(`entry-${i}:` + 'x'.repeat(1000));
+  fetch('https://large.example.test/' + i + '/' + 'x'.repeat(1000)).catch(() => {});
+}
+</script>

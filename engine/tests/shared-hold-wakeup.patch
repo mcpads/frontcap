@@ -1,0 +1,70 @@
+--- a/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h
++++ b/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h
+@@ -169,6 +169,7 @@
+ 
+  private:
+   friend class base::NoDestructor<ProcessTimeOverrideCoordinator>;
++  friend class ProcessTimeOverrideCoordinatorTestPeer;
+ 
+   static ProcessTimeOverrideCoordinator& Instance();
+ 
+--- a/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator_unittest.cc
++++ b/third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator_unittest.cc
+@@ -9,11 +9,57 @@
+ #include "third_party/blink/renderer/platform/scheduler/common/process_time_override_coordinator.h"
+ 
+ namespace blink::scheduler {
++
++// Calls the notifier deterministically without its wall-clock timer. Production
++// calls this only after shared-clock activation; this test holds the committed
++// clock fixed to isolate notification from time publication.
++class ProcessTimeOverrideCoordinatorTestPeer {
++ public:
++  static void Poll() {
++    ProcessTimeOverrideCoordinator::Instance().FrontcapPollSharedClock();
++  }
++};
++
+ namespace {
+ 
+ using testing::Eq;
+ 
+ constexpr base::Time kStartTime = base::Time() + base::Seconds(5000);
++
++TEST(ProcessTimeOverrideCoordinatorTest, SharedHoldRequestsOneQueueRecheck) {
++  const auto start_ticks = base::TimeTicks::Now() + base::Seconds(5);
++  int wake_count = 0;
++  int other_wakes = 0;
++  auto client = ProcessTimeOverrideCoordinator::CreateOverride(
++      kStartTime, start_ticks,
++      base::BindLambdaForTesting([&] { ++wake_count; }));
++  auto other = ProcessTimeOverrideCoordinator::CreateOverride(
++      kStartTime, start_ticks,
++      base::BindLambdaForTesting([&] { ++other_wakes; }));
++  // The other participant retains the committed instant while this scheduler
++  // initially proposes a future wake. Posting a held task invalidates that vote.
++  EXPECT_EQ(client->TryAdvancingTime(start_ticks + base::Seconds(1)), start_ticks);
++  client->Hold();
++  ProcessTimeOverrideCoordinatorTestPeer::Poll();
++  EXPECT_EQ(wake_count, 1);
++  EXPECT_EQ(other_wakes, 0);
++  EXPECT_EQ(client->NowTicks(), start_ticks);
++  EXPECT_TRUE(ProcessTimeOverrideCoordinator::FrontcapOthersDue(other.get()));
++
++  // No additional hold or time change means no repeated wake. Multiple posts
++  // before the next check are coalesced, without releasing their native hold.
++  ProcessTimeOverrideCoordinatorTestPeer::Poll();
++  EXPECT_EQ(wake_count, 1);
++  client->Hold();
++  client->Hold();
++  ProcessTimeOverrideCoordinatorTestPeer::Poll();
++  EXPECT_EQ(wake_count, 2);
++  ProcessTimeOverrideCoordinatorTestPeer::Poll();
++  EXPECT_EQ(wake_count, 2);
++  EXPECT_EQ(other_wakes, 0);
++  EXPECT_EQ(client->NowTicks(), start_ticks);
++  EXPECT_TRUE(ProcessTimeOverrideCoordinator::FrontcapOthersDue(other.get()));
++}
+ 
+ TEST(ProcessTimeOverrideCoordinatorTest, SingleClient) {
+   const base::TimeTicks start_ticks = base::TimeTicks::Now() + base::Seconds(5);

@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>Declarative shadow boundaries</title>
+<div id="initial"><template shadowrootmode="open"><span id="initial-status">Parsed</span><div><template shadowrootmode="open"><span id="nested-status">Nested</span></template></div></template></div>
+<div id="dynamic"></div><button id="parse">Parse component</button>
+<input id="later-time" hidden>
+<script>
+const dynamic = document.querySelector('#dynamic');
+document.querySelector('#parse').onclick = () => {
+  setTimeout(() => dynamic.setHTMLUnsafe('<div id="parsed-host"><template shadowrootmode="open"><span id="parsed-status">Ready</span></template></div>'), 7);
+  setTimeout(() => {
+    document.querySelector('#later-time').value = String(Date.now() - 946684800000);
+    dynamic.querySelector('#parsed-host').shadowRoot.querySelector('#parsed-status').textContent = 'Later';
+  }, 8);
+};
+</script>

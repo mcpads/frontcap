@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>s9</title>
+<script>
+  window.go = () => {
+    setTimeout(() => { console.log("c1", Date.now()); fetch("/x.json").catch(() => {}); }, 120);
+    setTimeout(() => { debugger; }, 200);
+  };
+</script>

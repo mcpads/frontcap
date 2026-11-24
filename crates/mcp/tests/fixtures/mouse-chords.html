@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Mouse chords</title>
+<style>body{margin:0}#pad{position:absolute;left:20px;top:20px;width:240px;height:140px;background:silver;touch-action:none}iframe{position:absolute;left:0;top:0;border:0;width:600px;height:300px}</style>
+<div id="pad">pointer target</div><output id="events">[]</output><output id="timer">pending</output>
+<script>
+if(location.search==='?parent') {
+  document.querySelector('#pad').remove();
+  const f=document.createElement('iframe');f.id='child';f.src=`http://localhost:${location.port}${location.pathname}`;document.body.append(f);
+} else {
+  const seen=[];const pad=document.querySelector('#pad');
+  for(const type of ['pointerdown','pointermove','pointerup','pointercancel','mousedown','mouseup','contextmenu','click','auxclick','lostpointercapture']) {
+    pad.addEventListener(type,e=>{
+      if(type==='contextmenu'||type==='auxclick')e.preventDefault();
+      if(type==='pointerdown'){pad.setPointerCapture(e.pointerId);setTimeout(()=>document.querySelector('#timer').textContent='fired',50);}
+      seen.push([type,e.button,e.buttons,e.isTrusted,Date.now()-946684800000]);
+      document.querySelector('#events').textContent=JSON.stringify(seen);
+    });
+  }
+}
+</script>

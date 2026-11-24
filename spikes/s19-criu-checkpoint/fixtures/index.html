@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Execution checkpoint oracle</title>
+<button id="step">Change hidden state</button>
+<button id="arm">Arm continuation</button>
+<button id="read">Read the worker</button>
+<output id="ready">starting</output>
+<output id="timer">pending</output>
+<output id="worker">pending</output>
+<script>
+(() => {
+  // Not exported through window, DOM or storage: only a restored execution keeps this closure and the
+  // worker's own heap (the adapter's P05 oracle, without its held request).
+  let secret = 0;
+  const worker = new Worker('checkpoint-worker.js');
+  worker.onmessage = ({data}) => {
+    if (data === 'ready') document.querySelector('#ready').textContent = 'ready';
+    else document.querySelector('#worker').textContent = String(data);
+  };
+  document.querySelector('#step').onclick = () => { secret++; worker.postMessage('step'); };
+  document.querySelector('#arm').onclick = () => {
+    setTimeout(() => document.querySelector('#timer').textContent = String(secret), 300);
+  };
+  document.querySelector('#read').onclick = () => worker.postMessage('read');
+})();
+</script>

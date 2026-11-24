@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>color</title>
+<style>html, body { margin: 0; height: 100%; }</style>
+<script>
+  // Background shows the 50 ms step of virtual time: red, green, blue, … one per step.
+  const colors = ["rgb(255,0,0)", "rgb(0,255,0)", "rgb(0,0,255)", "rgb(255,255,0)", "rgb(0,255,255)", "rgb(255,0,255)", "rgb(0,0,0)"];
+  let k = 0;
+  const paint = () => { document.documentElement.style.background = colors[k % colors.length]; };
+  paint();
+  const tick = () => { k++; paint(); if (k < 6) setTimeout(tick, 50); };
+  setTimeout(tick, 50);
+</script>

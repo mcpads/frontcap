@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Event stops</title>
+<p id="out">waiting</p>
+<script>
+  window.delivered = [];
+  window.painted = false;
+  window.later = false;
+  function load(name) {
+    fetch('https://api.example.test/' + name).then(r => r.text()).then(text => {
+      delivered.push(text);
+      document.querySelector('#out').textContent = delivered.join(',');
+      requestAnimationFrame(() => { painted = true; });
+    });
+  }
+  setTimeout(() => { load('first'); load('other'); }, 100);
+  setTimeout(() => { later = true; }, 650);
+  setTimeout(() => load('second'), 700);
+</script>

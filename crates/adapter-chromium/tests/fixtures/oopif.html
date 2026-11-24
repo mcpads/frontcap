@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>a frame of another process</title>
+<script>
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  addEventListener("message", (e) => got.push([e.data, t()]));
+  const q = new URLSearchParams(location.search);
+  const f = document.createElement("iframe");
+  // By default another site than the page's (127.0.0.1); `child` names another URL, `sandbox` sandboxes it
+  // without allow-same-origin: each would be out of process under isolation.
+  f.src = q.get("child") || "http://localhost:" + location.port + "/oopif_child.html";
+  if (q.has("sandbox")) f.sandbox = "allow-scripts";
+  document.documentElement.appendChild(f);
+</script>

@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>frame mutator</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }</style>
+<body>
+<script>
+  // Replaces the target on every animation frame; a click must land on the generation that was
+  // hit-tested while frozen.
+  window.__clicks = [];
+  let gen = 0;
+  function swap() {
+    document.querySelectorAll("button").forEach((b) => b.remove());
+    const b = document.createElement("button");
+    b.textContent = "target";
+    b.dataset.gen = String(++gen);
+    b.addEventListener("click", (e) => window.__clicks.push(Number(e.target.dataset.gen)));
+    document.body.appendChild(b);
+  }
+  window.__gen = () => gen;
+  swap();
+  const loop = () => { swap(); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+</script>
+</body>

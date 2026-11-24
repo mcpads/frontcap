@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>worker raf</title>
+<script>
+  // A worker's messages ask the page for an animation frame; nothing else on the page asks for one.
+  const t = () => Date.now() - 946684800000;
+  window.got = [];
+  const script = new URLSearchParams(location.search).get("worker") || "worker_raf.js";
+  new Worker(script).onmessage = (e) => requestAnimationFrame(() => got.push([e.data, t()]));
+</script>

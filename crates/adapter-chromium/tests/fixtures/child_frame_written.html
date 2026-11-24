@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>written frames</title>
+<!-- An editor whose frame the page writes with document.open/write (CKEditor 4, older TinyMCE). -->
+<iframe id="editor" title="Editor"></iframe>
+<button id="later" style="display:none">Later</button>
+<script>
+  const d = document.getElementById("editor").contentDocument;
+  d.open();
+  d.write("<body contenteditable style='margin:0'><p id=doc>start</p></body>");
+  d.close();
+  // Later the page rewrites itself (an old widget's pattern).
+  window.rewrite = () => {
+    document.open();
+    document.write("<!doctype html><button id=again>Again</button><script>window.clicks = 0; document.getElementById('again').onclick = () => clicks++;<\/script>");
+    document.close();
+  };
+</script>

@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>network child, parent importing</title>
+<script>
+  // A worker starts a worker from a network script, then imports a script synchronously (20 ms).
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const outer = `const w = new Worker(${JSON.stringify(location.origin + "/worker_net.js")}); w.onmessage = (e) => postMessage(e.data); setTimeout(() => { importScripts("https://api.example.test/lib.js"); postMessage(["imported", Date.now() - 946684800000]); }, 0);`;
+  const w = new Worker(URL.createObjectURL(new Blob([outer], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

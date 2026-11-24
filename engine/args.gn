@@ -1,0 +1,10 @@
+# frontcap's patched engine: a release build of `headless_shell` without symbols, configured as Chrome
+# for Testing's macOS chrome-headless-shell is (ICU data, V8 snapshot and paks beside the binary; not
+# //build/args/headless.gn, which is the Linux ozone configuration). Not an official build: official
+# builds add LTO and PGO, which change no behaviour frontcap relies on and multiply the build time.
+is_debug = false
+is_component_build = false
+dcheck_always_on = false
+symbol_level = 0
+blink_symbol_level = 0
+v8_symbol_level = 0

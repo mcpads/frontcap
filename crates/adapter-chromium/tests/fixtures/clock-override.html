@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><title>clock override</title>
+<script>
+  Date.now = () => 0;
+  setTimeout(() => console.log("at", 300), 300);
+</script>

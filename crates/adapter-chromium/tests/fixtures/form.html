@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>form</title>
+<style>button { width: 120px; height: 40px; }</style>
+<h1>Profile</h1>
+<button id="save">Save</button>
+<input id="name" aria-label="Name" value="x">
+<a href="#help" style="color: rgb(0, 0, 255)">Help</a>
+<ul id="list"><li>one</li></ul>
+<div role="dialog" aria-label="Panel"><p>Inside</p></div>
+<script>
+  window.__clicks = 0;
+  document.getElementById("save").addEventListener("click", () => window.__clicks++);
+  window.later = () => setTimeout(() => {
+    const li = document.createElement("li"); li.textContent = "two"; document.getElementById("list").appendChild(li);
+    document.getElementById("save").textContent = "Saved";
+  }, 100);
+  window.leave = () => setTimeout(() => { location.href = "nav2.html"; }, 10);
+  window.detach = () => document.getElementById("save").remove();
+</script>

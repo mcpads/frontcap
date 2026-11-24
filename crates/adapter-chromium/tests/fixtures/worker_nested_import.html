@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>nested worker, parent importing</title>
+<script>
+  // A worker starts its own worker and then blocks in a synchronous import (20 ms).
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const inner = `postMessage(["inner", Date.now() - 946684800000]); setTimeout(() => postMessage(["inner30", Date.now() - 946684800000]), 30);`;
+  const outer = `const w = new Worker(URL.createObjectURL(new Blob([${JSON.stringify(inner)}], { type: "text/javascript" }))); w.onmessage = (e) => postMessage(e.data); importScripts("https://api.example.test/lib.js"); postMessage(["imported", Date.now() - 946684800000]);`;
+  const w = new Worker(URL.createObjectURL(new Blob([outer], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

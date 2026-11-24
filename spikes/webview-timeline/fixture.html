@@ -1,0 +1,61 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WebView controlled timeline</title>
+<script>const wallSleep = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+const nativeTimeout = window.setTimeout.bind(window);
+const waitOnHost = ms => new Promise(resolve => nativeTimeout(resolve, ms));</script>
+<script src="/timeline.js"></script>
+<style>body { background:#17202a; color:white; font:22px sans-serif; padding:28px } canvas { border:2px solid white } pre {font-size:18px}</style>
+<h1>WebView controlled timeline</h1>
+<canvas width="200" height="100"></canvas><pre id="status">Measuring…</pre>
+<script>
+(async () => {
+  const report = {userAgent:navigator.userAgent, samples:{}};
+  try {
+    let timers=0;
+    const calls=[];
+    const canvas=document.querySelector('canvas'), context=canvas.getContext('2d');
+    setInterval(() => timers++,10);
+    function draw(timestamp) {
+      calls.push(timestamp);
+      context.fillStyle=calls.length % 2 ? '#00ff00' : '#0000ff';
+      context.fillRect(0,0,200,100);
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+    function read() {
+      return {timers,calls:[...calls],date:Date.now(),performance:performance.now(),
+        pixel:[...context.getImageData(50,50,1,1).data],state:__frontcapTime.snapshot()};
+    }
+    report.samples.initial=read();
+    await waitOnHost(300);
+    report.samples.held=read();
+    report.firstAdvance=await __frontcapTime.advance(100);
+    report.samples.first=read();
+    await waitOnHost(300);
+    report.samples.heldAgain=read();
+    report.secondAdvance=await __frontcapTime.advance(100);
+    report.samples.second=read();
+    const s=report.samples;
+    report.checks={
+      held:JSON.stringify(s.initial)===JSON.stringify(s.held),
+      firstTimers:s.first.timers===10,
+      firstFrame:JSON.stringify(s.first.calls)==='[100]',
+      firstPixels:JSON.stringify(s.first.pixel)==='[0,255,0,255]',
+      heldAgain:JSON.stringify(s.first)===JSON.stringify(s.heldAgain),
+      secondTimers:s.second.timers===20,
+      secondFrame:JSON.stringify(s.second.calls)==='[100,200]',
+      secondPixels:JSON.stringify(s.second.pixel)==='[0,0,255,255]',
+      date:s.second.date-s.initial.date===200,
+      performance:s.second.performance-s.initial.performance===200,
+      healthy:!s.second.state.failure,
+    };
+    report.passed=Object.values(report.checks).every(Boolean);
+    document.querySelector('#status').textContent=JSON.stringify(report.checks,null,2);
+  } catch (error) {
+    report.passed=false;report.error=String(error);
+    document.querySelector('#status').textContent=report.error;
+  }
+  await fetch('/report',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(report)});
+})();
+</script>

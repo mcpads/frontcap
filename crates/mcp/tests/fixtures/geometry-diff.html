@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Geometry and focus diffs</title>
+<style>
+body { margin: 0; }
+#target, #second { position: absolute; left: 20px; width: 80px; height: 30px; box-sizing: border-box; }
+#target { top: 40px; }
+#second { top: 100px; }
+#no-box { display: contents; }
+</style>
+<button id="move">Move</button>
+<form id="scope" aria-label="Controls">
+<button type="button" id="target">Target</button>
+<button type="button" id="second">Second</button>
+<div id="no-box" role="button">No box</div>
+</form>
+<script>
+document.querySelector('#move').onclick = () => {
+  document.querySelector('#target').style.transform = 'translate(25px,15px)';
+  document.querySelector('#target').style.width = '120px';
+  document.querySelector('#second').style.transform = 'translateX(5px)';
+};
+if (!location.search) {
+  const frame = document.createElement('iframe');
+  frame.id = 'child';
+  frame.style = 'position:absolute;left:300px;top:200px;width:300px;height:180px;border:0;transform:scale(1.25);transform-origin:0 0';
+  frame.src = `http://localhost:${location.port}${location.pathname}?child`;
+  document.body.append(frame);
+}
+</script>

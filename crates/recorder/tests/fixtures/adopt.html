@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>adopt</title>
+<p id="out"></p>
+<script>
+  // `?at100=a/hold/x,b/hold/x&at700=c/seq`: at each instant, calls https://api.example.test/<path>
+  // (POST with <body> when given); `#out` lists `<label>:<answer>@<ms>` in the order answers arrive.
+  const out = document.getElementById("out");
+  const note = (s) => { out.textContent += (out.textContent ? "," : "") + s; };
+  const q = new URLSearchParams(location.search);
+  const at = (ms, key) => setTimeout(() => {
+    for (const spec of (q.get(key) || "").split(",").filter(Boolean)) {
+      const [label, path, body] = spec.split("/");
+      const init = body === undefined ? {} : { method: "POST", body };
+      fetch("https://api.example.test/" + path, init).then((r) => r.text())
+        .then((t) => note(label + ":" + t + "@" + (Date.now() - 946684800000)), () => note(label + ":failed"));
+    }
+  }, ms);
+  at(100, "at100");
+  at(700, "at700");
+</script>

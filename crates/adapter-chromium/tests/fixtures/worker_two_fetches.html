@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>worker two fetches</title>
+<script>
+  // A worker that issues two fetches at 30 ms (2 and 5 ms of latency) and reports each response's instant.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `const now = () => Date.now() - 946684800000; setTimeout(() => { for (const u of ["a", "b"]) fetch("https://api.example.test/" + u).then(r => r.text()).then(b => postMessage([b, now()])); }, 30);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

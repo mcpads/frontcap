@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>Keys</title>
+<input id="field" aria-label="Field">
+<button id="b">B</button>
+<script>
+  // Keys, clicks and compositions as the page receives them: [type, key or data, shiftKey].
+  window.seen = [];
+  for (const type of ["keydown", "keyup", "click", "compositionstart", "compositionupdate", "compositionend"]) {
+    addEventListener(type, (e) => seen.push([type, e.key ?? e.data ?? null, e.shiftKey ?? null]), true);
+  }
+</script>

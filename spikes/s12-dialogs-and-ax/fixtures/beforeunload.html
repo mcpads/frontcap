@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>Native beforeunload oracle</title>
+<button id="arm">Arm beforeunload</button>
+<script>
+window.loaded = true;
+window.activated = false;
+arm.onclick = event => {
+  window.activated = event.isTrusted && navigator.userActivation.hasBeenActive;
+  window.onbeforeunload = event => { event.preventDefault(); event.returnValue = ''; };
+};
+</script>

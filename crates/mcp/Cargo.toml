@@ -1,0 +1,32 @@
+[package]
+name = "frontcap-mcp"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+name = "frontcap_mcp"
+
+[[bin]]
+name = "frontcap-mcp"
+path = "src/main.rs"
+
+[dependencies]
+frontcap-core = { path = "../core", features = ["schema"] }
+frontcap-recorder-protocol = { path = "../recorder-protocol" }
+frontcap-recorder = { path = "../recorder" }
+serde.workspace = true
+serde_json = { workspace = true, features = ["raw_value"] }
+serde_path_to_error.workspace = true
+schemars.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+png.workspace = true
+tempfile.workspace = true
+
+[dev-dependencies]
+browser-pin = { path = "../browser-pin" }
+tiny_http.workspace = true
+tokio-tungstenite.workspace = true
+futures-util.workspace = true

@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>blocked</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }</style>
+<button id="go">go</button>
+<script>
+  document.getElementById("go").addEventListener("click", () => {
+    fetch("https://cdn.example.test/x.js").catch(() => console.warn("blocked"));
+  });
+</script>

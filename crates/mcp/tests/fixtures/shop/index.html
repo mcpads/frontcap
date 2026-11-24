@@ -1,0 +1,132 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>shop</title>
+<style>
+  body { font: 14px sans-serif; margin: 0; }
+  header { display: flex; gap: 16px; padding: 8px 12px; background: #222; color: #fff; }
+  main { padding: 12px; }
+  .hidden { display: none !important; }
+  #error, #order-error { color: #b00; }
+  .spin { width: 24px; height: 24px; border: 3px solid #ccc; border-top-color: #333; border-radius: 50%;
+          animation: spin 600ms linear infinite; display: inline-block; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .product { display: flex; gap: 12px; align-items: center; padding: 4px 0; }
+  #progress { height: 4px; background: #4a4; width: 0; }
+  .toast { position: fixed; bottom: 16px; right: 16px; background: #333; color: #fff; padding: 8px 12px;
+           opacity: 0; transition: opacity 300ms ease-in; }
+  .toast.shown { opacity: 1; }
+  #confirm { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); display: flex; align-items: center;
+             justify-content: center; }
+  #confirm > div { background: #fff; padding: 16px; }
+</style></head>
+<body>
+<header><strong>Shop</strong><span id="clock"></span><span>Cart: <span id="cart-count">0</span></span></header>
+<main>
+  <section id="login-view">
+    <h1>Sign in</h1>
+    <form id="login-form">
+      <label>Email <input id="email" type="email" autocomplete="off"></label>
+      <label>Password <input id="password" type="password"></label>
+      <button id="login" type="submit">Sign in</button>
+    </form>
+    <p id="error" role="alert"></p>
+    <p id="loading" class="hidden"><img src="spinner.gif" alt="loading" width="32" height="32"> <span class="spin"></span> Signing in…</p>
+  </section>
+  <section id="products-view" class="hidden">
+    <h1>Products</h1>
+    <div id="progress"></div>
+    <label>Search <input id="search" autocomplete="off"></label>
+    <p id="reco"></p>
+    <div id="list" role="list"></div>
+    <button id="checkout">Checkout</button>
+    <p id="order-error" role="alert" class="hidden">Order failed. <button id="retry">Retry</button></p>
+    <p id="order-ok" class="hidden">Order placed</p>
+  </section>
+</main>
+<div class="toast" role="status"></div>
+<div id="confirm" class="hidden" role="dialog" aria-label="Confirm order"><div><p>Place the order?</p>
+  <button id="place">Place order</button> <button id="cancel">Cancel</button></div></div>
+<script>
+  const api = "https://api.shop.test";
+  const $ = (s) => document.querySelector(s);
+  const tick = () => { $("#clock").textContent = new Date().toISOString().slice(11, 19); };
+  tick(); setInterval(tick, 1000);
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const showCart = () => { $("#cart-count").textContent = String(cart.length); };
+  showCart();
+
+  $("#login-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = $("#email").value.trim();
+    if (!email) { $("#error").textContent = "Email required"; return; }
+    if (!$("#password").value) { $("#error").textContent = "Password required"; return; }
+    $("#error").textContent = "";
+    $("#loading").classList.remove("hidden");
+    const r = await fetch(api + "/login", { method: "POST", body: JSON.stringify({ email }) });
+    $("#loading").classList.add("hidden");
+    if (!r.ok) { $("#error").textContent = "Sign-in failed"; return; }
+    localStorage.setItem("token", (await r.json()).token);
+    location.hash = "#products";
+  });
+
+  function render(items) {
+    $("#list").replaceChildren(...items.map((p) => {
+      const row = document.createElement("div");
+      row.className = "product"; row.setAttribute("role", "listitem");
+      row.innerHTML = `<span class="name">${p.name}</span><span class="price">${p.price}</span>`;
+      const add = document.createElement("button");
+      add.textContent = "Add " + p.name;
+      add.addEventListener("click", () => { cart.push(p.name); localStorage.setItem("cart", JSON.stringify(cart)); showCart(); toast("Added " + p.name); });
+      row.append(add);
+      return row;
+    }));
+  }
+  async function load(q) {
+    const r = await fetch(api + "/products" + (q ? "?q=" + encodeURIComponent(q) : ""));
+    render(await r.json());
+  }
+  function progress() {
+    const start = performance.now();
+    const step = (now) => {
+      const f = Math.min(1, (now - start) / 500);
+      $("#progress").style.width = (f * 100) + "%";
+      if (f < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  let toastTimer;
+  function toast(text) {
+    const t = $(".toast");
+    t.textContent = text; t.classList.add("shown");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("shown"), 2000);
+  }
+  let debounce;
+  $("#search").addEventListener("input", (e) => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => load(e.target.value), 300);
+  });
+  async function route() {
+    const products = location.hash === "#products";
+    $("#login-view").classList.toggle("hidden", products);
+    $("#products-view").classList.toggle("hidden", !products);
+    if (products) {
+      const picks = ["Chair", "Lamp", "Desk"];
+      $("#reco").textContent = "Recommended: " + picks[Math.floor(Math.random() * picks.length)];
+      progress();
+      await load("");
+    }
+  }
+  window.addEventListener("hashchange", route);
+  route();
+
+  $("#checkout").addEventListener("click", () => $("#confirm").classList.remove("hidden"));
+  $("#cancel").addEventListener("click", () => $("#confirm").classList.add("hidden"));
+  async function order() {
+    $("#order-error").classList.add("hidden");
+    const r = await fetch(api + "/order", { method: "POST", body: JSON.stringify({ cart }) });
+    if (r.ok) { $("#order-ok").classList.remove("hidden"); cart.length = 0; localStorage.setItem("cart", "[]"); showCart(); }
+    else $("#order-error").classList.remove("hidden");
+  }
+  $("#place").addEventListener("click", () => { $("#confirm").classList.add("hidden"); order(); });
+  $("#retry").addEventListener("click", order);
+</script>
+</body></html>

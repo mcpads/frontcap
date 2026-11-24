@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>wheel frozen</title>
+<button id="b">b</button>
+<div id="tall" style="height:4000px">tall</div>
+<script>
+  window.events = [];
+  for (const t of ["pointerdown", "pointerup", "click", "pointermove", "wheel", "scroll"]) addEventListener(t, () => events.push(t), { passive: true });
+</script>

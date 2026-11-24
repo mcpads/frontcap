@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>count</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 160px; height: 40px; }</style>
+<button id="ok">count</button><p id="count" style="position:absolute;top:80px">0</p>
+<script>
+  let n = 0;
+  document.getElementById("ok").addEventListener("click", () => { document.getElementById("count").textContent = String(++n); });
+</script>

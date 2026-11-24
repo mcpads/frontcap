@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>cancel native pointer</title>
+<style>
+body { margin: 0; }
+#commit { position: absolute; left: 20px; top: 20px; width: 200px; height: 100px; }
+#other { position: absolute; left: 300px; top: 20px; width: 100px; height: 100px; background: silver; }
+</style>
+<button id="commit">Commit</button><div id="other">Other</div>
+<script>
+window.events = []; window.commits = 0; window.timer = false; window.frame = false;
+window.pointer = null; window.cancelledPointer = null;
+const commit = document.querySelector('#commit');
+commit.addEventListener('pointerdown', e => {
+  pointer = e.pointerId;
+  commit.setPointerCapture(pointer);
+  setTimeout(() => timer = true, 5);
+  requestAnimationFrame(() => frame = true);
+});
+commit.addEventListener('pointercancel', e => {
+  cancelledPointer = e.pointerId;
+  if (location.hash === '#leave') location.href = 'form.html';
+  if (location.hash === '#warn') console.warn('pointer cancelled');
+});
+commit.addEventListener('click', () => commits++);
+for (const type of ['pointerdown','pointerup','pointercancel','pointermove','lostpointercapture','click','auxclick','contextmenu']) {
+  document.addEventListener(type, e => {
+    if (type === 'contextmenu' || type === 'auxclick') e.preventDefault();
+    events.push([type, e.target.id, e.button, e.buttons, e.isTrusted, Math.round(performance.now()), Math.round(e.timeStamp)]);
+  });
+}
+</script>

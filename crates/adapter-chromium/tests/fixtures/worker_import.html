@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>worker importScripts</title>
+<script>
+  // A worker that imports a script over the network (synchronously) and then sets a 30 ms timer.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `importScripts("https://api.example.test/lib.js"); postMessage(["imported", Date.now() - 946684800000, lib]); setTimeout(() => postMessage(["t30", Date.now() - 946684800000, lib]), 30);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

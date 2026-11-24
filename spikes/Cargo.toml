@@ -1,0 +1,19 @@
+[workspace]
+resolver = "3"
+members = ["common", "s1-pause-semantics", "s2-fetch-timing", "s3-macos-virtual-time", "s4-frame-control", "s5-time-level-capture", "s6-transport", "s7-recovery", "s8-composition", "s9-event-clocks", "s10-native-frames", "s11-session-loss", "s12-dialogs-and-ax", "s13-loss-mid-budget", "s14-input-under-pause", "s15-ax-fetch-stall", "s16-capture-at-time", "s17-drag-and-upload", "s19-criu-checkpoint"]
+
+[workspace.package]
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+cdp = { path = "../crates/cdp" }
+browser-pin = { path = "../crates/browser-pin" }
+spike-common = { path = "common" }
+anyhow = "1"
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "0.30"
+futures-util = "0.3"
+tiny_http = "0.12"
+base64 = "0.22"

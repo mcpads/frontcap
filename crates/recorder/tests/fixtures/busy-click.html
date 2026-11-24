@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>busy click</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 160px; height: 40px; }</style>
+<button id="ok">start</button><p id="count" style="position:absolute;top:80px">0</p>
+<script>
+  // A click starts three seconds of DOM activity every 100 ms: a settle with a shorter budget ends exhausted.
+  let n = 0;
+  document.getElementById("ok").addEventListener("click", () => {
+    const id = setInterval(() => { document.getElementById("count").textContent = String(++n); if (n === 30) clearInterval(id); }, 100);
+  });
+</script>

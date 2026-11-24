@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>Asynchronous provider</title>
+<output id="writes">0</output>
+<script>
+  // Notes persisted to IndexedDB: a write settles when its transaction completes; reads come from memory.
+  let writes = 0;
+  const notes = { text: '' };
+  const database = new Promise((done) => {
+    const open = indexedDB.open('notes', 1);
+    open.onupgradeneeded = () => open.result.createObjectStore('notes');
+    open.onsuccess = () => done(open.result);
+  });
+  frontcapState.register({ id: 'notes', read: () => ({ text: notes.text }), write: (value) => {
+    writes += 1;
+    document.querySelector('#writes').textContent = String(writes);
+    return database.then((db) => new Promise((done) => {
+      const tx = db.transaction('notes', 'readwrite');
+      tx.objectStore('notes').put(value.text, 'text');
+      tx.oncomplete = () => { notes.text = value.text; done(); };
+    }));
+  } });
+  // A setting a timer saves 100 ms after the write: it needs progress, within 200 ms.
+  const setting = { level: 0 };
+  frontcapState.register({ id: 'setting', max_ms: 200, read: () => ({ level: setting.level }), write: (value) => {
+    writes += 1;
+    document.querySelector('#writes').textContent = String(writes);
+    return new Promise((done) => setTimeout(() => { setting.level = value.level; done(); }, 100));
+  } });
+</script>

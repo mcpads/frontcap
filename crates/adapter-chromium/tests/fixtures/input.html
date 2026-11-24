@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>input</title>
+<style>
+  body { margin: 0; height: 4000px; }
+  #btn { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }
+  #form { position: absolute; left: 10px; top: 70px; }
+  #area, #editable, #readonly, #disabled, #mover, #pick { display: block; margin: 4px 0; }
+  #editable { width: 200px; min-height: 20px; border: 1px solid #888; }
+</style>
+<button id="btn">Go</button>
+<form id="form" onsubmit="event.preventDefault(); log.push('submit:' + document.getElementById('name').value)">
+  <input id="name" aria-label="Name" value="old">
+  <textarea id="area">old</textarea>
+  <div id="editable" contenteditable="true">old</div>
+  <input id="readonly" readonly value="ro">
+  <input id="disabled" disabled value="dis">
+  <input id="mover" aria-label="Mover">
+  <input id="mail" type="email" value="a@b">
+  <input id="num" type="number" value="12">
+  <div id="host" contenteditable="true">pre <span id="inner">mid</span></div>
+  <div id="plain">plain</div>
+  <input id="stealer" aria-label="Stealer">
+  <iframe id="frame" srcdoc="<input id=inframe>" style="width:200px;height:40px"></iframe>
+  <select id="pick"><option value="a">Option A</option><option value="b">Option B</option><option value="c">Option C</option><option value="d" disabled>Option D</option></select>
+  <button id="send" type="submit">Send</button>
+  <select id="many" multiple><option value="x">X</option><option value="y">Y</option></select>
+</form>
+<script>
+  window.log = [];
+  const btn = document.getElementById("btn");
+  for (const t of ["click", "dblclick", "pointerover"]) btn.addEventListener(t, () => log.push(t));
+  const pick = document.getElementById("pick");
+  for (const t of ["input", "change"]) pick.addEventListener(t, () => log.push(t));
+  document.getElementById("name").addEventListener("keydown", (e) => log.push("keydown:" + e.key));
+  let moved = 0;
+  document.getElementById("mover").addEventListener("keydown", () => { if (++moved === 2) document.getElementById("name").focus(); });
+  document.getElementById("stealer").addEventListener("focus", () => document.getElementById("name").focus());
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") log.push("escape:" + document.activeElement.tagName); });
+</script>

@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><title>form</title>
+<style>input,button{position:absolute;left:10px;width:200px;height:30px} #name{top:10px} #go{top:60px}</style>
+<input id="name"><button id="go" onclick="location.href='next.html'">go</button>
+<script>fetch("held.json").then(r => window.__held = r.status).catch(() => window.__held = "failed");</script>

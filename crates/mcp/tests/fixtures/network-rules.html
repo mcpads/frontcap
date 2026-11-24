@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>Live network rules</title>
+<button id="request">Request</button><output id="responses">[]</output>
+<script>
+let count=0;const responses=[];
+document.querySelector('#request').onclick=()=>{
+  fetch('/api/value?n='+ ++count).then(r=>r.text()).then(text=>{
+    responses.push(text);document.querySelector('#responses').textContent=JSON.stringify(responses);
+  });
+};
+</script>

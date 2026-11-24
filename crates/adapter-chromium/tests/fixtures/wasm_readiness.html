@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>Wasm readiness</title>
+<output id="status">waiting</output>
+<script>
+window.events = [];
+setTimeout(() => events.push(['timer', performance.now()]), 50);
+WebAssembly.instantiateStreaming(fetch('https://wasm.test/module.wasm')).then(
+  ({instance}) => {
+    events.push(['wasm', performance.now(), instance.exports.answer()]);
+    document.querySelector('#status').textContent = 'ready';
+  },
+  error => {
+    events.push(['error', performance.now(), error.name]);
+    document.querySelector('#status').textContent = 'error';
+  }
+);
+</script>

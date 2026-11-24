@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>First shadow attachment</title>
+<div id="host"></div><div id="outer"></div>
+<button id="attach">Attach</button>
+<output id="page-observations">0</output>
+<input id="later-time" hidden>
+<script>
+  const nativeAttach = Element.prototype.attachShadow;
+  const nested = location.search === '?nested';
+  const host = nested ? document.createElement('div') : document.querySelector('#host');
+  if (nested) {
+    host.id = 'nested-host';
+    Reflect.apply(nativeAttach, document.querySelector('#outer'), [{mode:'open'}]).append(host);
+  }
+  let observations = 0;
+  new MutationObserver(records => {
+    observations += records.length;
+    document.querySelector('#page-observations').textContent = String(observations);
+  }).observe(host, {subtree:true, childList:true, attributes:true, characterData:true});
+  const schedule = () => {
+    setTimeout(() => {
+      Reflect.apply(nativeAttach, host, [{mode:'open'}]).innerHTML = '<span id="attached-status">Ready</span>';
+    }, 7);
+    setTimeout(() => { document.querySelector('#later-time').value = String(Date.now()-946684800000); host.shadowRoot.querySelector('#attached-status').textContent = 'Later'; }, 8);
+  };
+  document.querySelector('#attach').onclick = schedule;
+  if (!location.search) {
+    const frame = document.createElement('iframe');
+    frame.id = 'child'; frame.width = '500'; frame.height = '180';
+    frame.src = `http://localhost:${location.port}${location.pathname}?nested`;
+    document.body.append(frame);
+  }
+</script>

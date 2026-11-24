@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>toast</title>
+<style>
+  button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }
+  .toast { position: absolute; top: 80px; left: 10px; opacity: 0; transition: opacity 300ms linear; }
+  .toast.shown { opacity: 1; }
+</style>
+<button id="go">go</button>
+<script>
+  document.getElementById("go").addEventListener("click", () => {
+    setTimeout(async () => {
+      const r = await fetch("https://api.example.test/toast");
+      const body = await r.json();
+      const t = document.createElement("div");
+      t.className = "toast";
+      t.textContent = body.text;
+      document.body.appendChild(t);
+      requestAnimationFrame(() => t.classList.add("shown"));
+    }, 3000);
+  });
+</script>

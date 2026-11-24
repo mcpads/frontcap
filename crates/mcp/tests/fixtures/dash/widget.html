@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>widget</title>
+<body style="margin:0;font:13px sans-serif;background:#eef">
+<p>Pro plan <button id="upgrade">Upgrade</button></p>
+<p id="state" role="status"></p>
+<script>
+  // Upgrading takes the provider a moment; then the widget thanks the user and tells the page.
+  document.querySelector("#upgrade").addEventListener("click", () => {
+    document.querySelector("#state").textContent = "Processing…";
+    setTimeout(() => {
+      document.querySelector("#state").textContent = "Thanks!";
+      parent.postMessage({ upgraded: true }, "*");
+    }, 250);
+  });
+</script></body>

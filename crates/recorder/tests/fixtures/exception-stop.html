@@ -1,0 +1,5 @@
+<!doctype html><title>Exception boundary</title><p id="out">waiting</p>
+<script>
+setTimeout(() => { document.querySelector('#out').textContent='failed'; if (location.search) return Promise.reject(new Error('scheduled failure')); throw new Error('scheduled failure'); }, 250);
+setTimeout(() => { document.querySelector('#out').textContent='too late'; }, 251);
+</script>

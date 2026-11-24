@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>Held native HTML drag</title>
+<style>body{margin:0}#src{position:absolute;left:20px;top:20px;width:60px;height:60px}#dst{position:absolute;left:200px;top:20px;width:100px;height:100px}#button{position:absolute;left:400px;top:20px;width:100px;height:60px}iframe{position:absolute;left:0;top:0;border:0;width:600px;height:300px}</style>
+<div id="src" draggable="true">source</div><div id="dst">drop here</div><button id="button">click</button>
+<output id="events">[]</output><output id="drops">0</output><output id="clicks">0</output><output id="hover">false</output><output id="timer">pending</output>
+<script>
+if(location.search==='?parent'){
+  document.querySelector('#src').remove();document.querySelector('#dst').remove();document.querySelector('#button').remove();
+  const f=document.createElement('iframe');f.id='child';f.src=`http://localhost:${location.port}${location.pathname}`;document.body.append(f);
+}else{
+ const seen=[];
+ for(const kind of ['dragstart','drag','dragenter','dragover','dragleave','drop','dragend','pointercancel'])document.addEventListener(kind,e=>{
+   if(kind==='dragstart'){
+     e.dataTransfer.setData('text/plain','owned drag');e.dataTransfer.effectAllowed='copy';
+     setTimeout(()=>document.querySelector('#timer').textContent='fired',50);
+     if(location.search==='?deny')e.preventDefault();
+   }
+   if(kind==='dragover'){e.preventDefault();e.dataTransfer.dropEffect='copy';if(location.search==='?remove'&&e.target.id==='dst')document.querySelector('#src')?.remove();}
+   if(e.target.id==='dst'&&kind==='dragenter')document.querySelector('#hover').textContent='true';
+   if(e.target.id==='dst'&&['dragleave','drop'].includes(kind))document.querySelector('#hover').textContent='false';
+   if(kind==='drop'){e.preventDefault();document.querySelector('#drops').textContent=Number(document.querySelector('#drops').textContent)+1;}
+   seen.push([kind,e.target.id,e.isTrusted,Date.now()-946684800000,kind==='drop'?e.dataTransfer.getData('text/plain'):null]);
+   document.querySelector('#events').textContent=JSON.stringify(seen);
+ });document.querySelector('#button').onclick=()=>document.querySelector('#clicks').textContent=Number(document.querySelector('#clicks').textContent)+1;
+}
+</script>

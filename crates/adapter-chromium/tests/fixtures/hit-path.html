@@ -1,0 +1,59 @@
+<!doctype html><meta charset="utf-8"><title>Hit ancestry</title>
+<style>body { margin: 0 } iframe { display: block; border: 0; width: 600px; height: 320px; transform: translate(20px, 20px) scale(.9); transform-origin: 0 0 } button { width: 120px; height: 40px; margin: 20px }</style>
+<body><script>
+(() => {
+  const query = new URLSearchParams(location.search);
+  if (query.has('deep')) {
+    let parent = document.body;
+    for (let i = 0; i < Number(query.get('deep')); i++) {
+      const child = document.createElement('div');
+      parent.append(child);
+      // Include shadow boundaries in the path without requiring 512 nested layout boxes.
+      parent = child.attachShadow({ mode: 'open' });
+    }
+    const button = document.createElement('button');
+    button.textContent = 'Deep';
+    button.style.cssText = 'width:120px;height:40px;margin:20px';
+    parent.append(button);
+    return;
+  }
+  const level = Number(query.get('level') || 0);
+  const host = document.createElement('div');
+  host.id = `host-${level}`;
+  document.body.append(host);
+  const root = host.attachShadow({ mode: level === 1 ? 'open' : 'closed' });
+  root.innerHTML = `<div id="wrap-${level}"><slot id="slot-${level}"></slot></div>`;
+  if (level < 2) {
+    const frame = document.createElement('iframe');
+    frame.id = `frame-${level + 1}`;
+    const url = new URL(location.href);
+    url.hostname = level === 0 ? 'localhost' : '127.0.0.1';
+    url.search = `?level=${level + 1}`;
+    frame.src = url;
+    host.append(frame);
+    return;
+  }
+  const button = document.createElement('button');
+  button.id = 'leaf-target';
+  button.textContent = 'Leaf';
+  button.dataset.clicks = '0';
+  button.dataset.getters = '0';
+  button.dataset.timer = 'pending';
+  host.append(button);
+  // An independent browser event path, observed from inside the closed root that owns the slot.
+  root.addEventListener('click', event => {
+    button.dataset.clicks = String(Number(button.dataset.clicks) + 1);
+    button.dataset.trusted = String(event.isTrusted);
+    button.dataset.path = JSON.stringify(event.composedPath().map(node => node.id || node.nodeName || 'window'));
+  });
+  // Observation must use inspector/isolated-world readers, not invoke page-owned accessors.
+  // The button takes AssignedSlot; wrap and host take Parent, exercising the new parent reader too.
+  for (const node of [button, root.querySelector('#wrap-2'), host]) {
+    Object.defineProperty(node, 'parentNode', { get() {
+      button.dataset.getters = String(Number(button.dataset.getters) + 1);
+      throw new Error('page-owned parentNode getter');
+    } });
+  }
+  setTimeout(() => { button.dataset.timer = 'ran'; }, 1000);
+})();
+</script>

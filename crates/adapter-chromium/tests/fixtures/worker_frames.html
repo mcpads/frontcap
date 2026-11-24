@@ -1,0 +1,15 @@
+<!doctype html>
+<style>html,body{margin:0;background:white}canvas{display:block;position:absolute;top:0;width:64px;height:64px}#right{left:64px}</style>
+<canvas id="left" width="64" height="64"></canvas><canvas id="right" width="64" height="64"></canvas>
+<script>
+window.results={};window.workers=[];
+window.startWorkers=()=>{
+ for (const [id,color] of [['left','#ff0000'],['right','#00ff00']]) {
+  const worker=new Worker('worker_frames.js');workers.push(worker);
+  worker.onmessage=e=>{results[id]=e.data};
+  const canvas=document.getElementById(id).transferControlToOffscreen();
+  worker.postMessage({canvas,color},[canvas]);
+ }
+ return true;
+};
+</script>

@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>s6</title>
+<script>
+  window.__log = [];
+  window.probe = async (base) => {
+    for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+      try { await fetch(`http://${host}:${base}/ping`); window.__log.push(["ok", host]); }
+      catch (e) { window.__log.push(["fail", host]); }
+    }
+  };
+  window.probeWs = async (port) => {
+    for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+      await new Promise((resolve) => {
+        const ws = new WebSocket(`ws://${host}:${port}/ws`);
+        ws.onopen = () => { window.__log.push(["ws-ok", host]); ws.close(); resolve(); };
+        ws.onerror = () => { window.__log.push(["ws-fail", host]); resolve(); };
+      });
+    }
+  };
+  window.openSse = (url) => {
+    const es = new EventSource(url);
+    es.onmessage = (e) => window.__log.push(["sse", e.data, performance.now()]);
+  };
+</script>

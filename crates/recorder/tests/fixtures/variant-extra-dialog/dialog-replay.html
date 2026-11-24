@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><title>Dialog replay</title>
+<button id="start">Start</button><script>
+window.answers=[];start.onclick=()=>setTimeout(()=>{answers.push(confirm('approve'));answers.push(prompt('name','default'));confirm('unexpected');},10);
+</script>

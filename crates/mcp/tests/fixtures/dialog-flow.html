@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Dialog workflow</title>
+<button id="delete">Delete draft</button><button id="schedule">Schedule confirmation</button>
+<button id="dirty">Edit draft</button><input id="key"><output id="answers"></output>
+<script>
+let calls = 0, dirty = false;
+function resolveDraft() {
+  ++calls;
+  const accepted = confirm('Delete draft?');
+  const label = prompt('Archive label', 'Draft');
+  document.querySelector('#answers').textContent = JSON.stringify([calls, accepted, label]);
+  document.body.dataset.completed = 'yes';
+}
+document.querySelector('#delete').onclick = resolveDraft;
+document.querySelector('#schedule').onclick = () => setTimeout(resolveDraft, 10);
+document.querySelector('#dirty').onclick = () => { dirty = true; };
+document.querySelector('#key').onkeydown = e => { if (e.key === 'x') confirm('Keep key?'); };
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = 'Draft'; } });
+</script>

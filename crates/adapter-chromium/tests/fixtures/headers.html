@@ -1,0 +1,4 @@
+<!doctype html><meta charset="utf-8"><title>headers</title><p id="out"></p>
+<script>
+  window.go = () => fetch("https://api.example.test/items").then((r) => { document.getElementById("out").textContent = r.headers.get("x-total-count") + " " + r.headers.get("vary"); });
+</script>

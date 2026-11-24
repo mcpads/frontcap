@@ -1,0 +1,110 @@
+<!doctype html><meta charset="utf-8"><title>Notes</title>
+<style>
+  body { font: 14px system-ui; margin: 0; display: grid; grid-template-columns: 200px 1fr; height: 100vh; }
+  nav { border-right: 1px solid #ccc; padding: 8px; }
+  nav ul { list-style: none; padding: 0; } nav button { display: block; width: 100%; text-align: left; margin: 2px 0; }
+  nav button[aria-current="true"] { font-weight: bold; }
+  main { padding: 12px; position: relative; }
+  #editor { min-height: 120px; border: 1px solid #999; padding: 6px; }
+  .toast { position: fixed; right: 12px; bottom: 12px; background: #333; color: #fff; padding: 6px 10px;
+           opacity: 0; transition: opacity 200ms; }
+  .toast.show { opacity: 1; }
+  #palette { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); width: 300px; background: #fff;
+             border: 1px solid #333; padding: 6px; }
+  #palette[hidden] { display: none; }
+  #tip { position: absolute; background: #ffd; border: 1px solid #aa8; padding: 2px 4px; }
+</style>
+<nav aria-label="Notes">
+  <button id="new">New note</button>
+  <ul id="list"></ul>
+</nav>
+<main>
+  <h1 id="title">No note</h1>
+  <div id="editor" role="textbox" aria-label="Note text" aria-multiline="true" contenteditable="true"></div>
+  <p><label>Font size <input id="size" type="range" min="10" max="30" value="14" aria-label="Font size"></label>
+     <span id="size-value">14</span></p>
+  <button id="delete" aria-describedby="tip">Delete note</button>
+  <button id="preview">Open preview</button>
+  <p id="status" role="status"></p>
+  <div id="tip" role="tooltip" hidden>Deletes this note for good</div>
+</main>
+<div id="palette" role="dialog" aria-label="Command palette" hidden>
+  <input id="command" aria-label="Command" autocomplete="off">
+  <ul id="commands" role="listbox"></ul>
+</div>
+<div class="toast" role="alert" id="toast"></div>
+<script>
+  // A notes app: notes from an API, an editor that saves 500 ms after typing stops (a "Saved" toast that
+  // fades out after 1.5 s), a command palette (Ctrl+K, filter, Enter, Escape), delete with a confirm
+  // dialog, a font size slider, a tooltip after a 400 ms hover, and a preview window.
+  const api = "https://api.notes.test";
+  const $ = (id) => document.getElementById(id);
+  let notes = [], current = null, saveTimer = null, toastTimer = null, tipTimer = null;
+  const toast = (text) => {
+    $("toast").textContent = text; $("toast").classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 1500);
+  };
+  const render = () => {
+    $("list").replaceChildren(...notes.map((n) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      b.textContent = n.title;
+      b.setAttribute("aria-current", String(current && n.id === current.id));
+      b.onclick = () => open(n);
+      li.append(b);
+      return li;
+    }));
+    $("title").textContent = current ? current.title : "No note";
+  };
+  const open = (n) => { current = n; $("editor").textContent = n.text; render(); };
+  fetch(api + "/notes").then((r) => r.json()).then((list) => { notes = list; open(notes[0]); });
+  $("editor").addEventListener("input", () => {
+    if (!current) return;
+    current.text = $("editor").textContent;
+    $("status").textContent = "Editing…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      $("status").textContent = "Saving…";
+      fetch(api + "/notes/" + current.id, { method: "PUT", body: JSON.stringify(current) })
+        .then((r) => { if (!r.ok) throw new Error(); $("status").textContent = ""; toast("Saved"); })
+        .catch(() => { $("status").textContent = "Save failed"; });
+    }, 500);
+  });
+  $("new").onclick = () => {
+    const n = { id: "n" + (notes.length + 1), title: "Untitled " + (notes.length + 1), text: "" };
+    notes.push(n); open(n); $("editor").focus();
+  };
+  $("delete").onclick = () => {
+    if (!current || !confirm("Delete \"" + current.title + "\"?")) return;
+    fetch(api + "/notes/" + current.id, { method: "DELETE" }).then(() => {
+      notes = notes.filter((n) => n !== current); current = null; $("editor").textContent = ""; render(); toast("Deleted");
+    });
+  };
+  $("size").addEventListener("input", () => {
+    $("size-value").textContent = $("size").value; $("editor").style.fontSize = $("size").value + "px";
+  });
+  $("delete").addEventListener("mouseenter", () => { tipTimer = setTimeout(() => { $("tip").hidden = false; }, 400); });
+  $("delete").addEventListener("mouseleave", () => { clearTimeout(tipTimer); $("tip").hidden = true; });
+  $("preview").onclick = () => {
+    const w = window.open("about:blank", "preview");
+    $("status").textContent = w ? "Preview open" : "Preview blocked";
+  };
+  const commands = [["New note", () => $("new").click()], ["Delete note", () => $("delete").click()]];
+  const showCommands = () => {
+    const q = $("command").value.toLowerCase();
+    $("commands").replaceChildren(...commands.filter(([name]) => name.toLowerCase().includes(q)).map(([name], i) => {
+      const li = document.createElement("li"); li.textContent = name; li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", String(i === 0)); return li;
+    }));
+  };
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") { e.preventDefault(); $("palette").hidden = false; $("command").value = ""; showCommands(); $("command").focus(); }
+    else if (e.key === "Escape" && !$("palette").hidden) { $("palette").hidden = true; }
+  });
+  $("command").addEventListener("input", showCommands);
+  $("command").addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    const first = $("commands").querySelector("[role=option]");
+    $("palette").hidden = true;
+    if (first) commands.find(([name]) => name === first.textContent)[1]();
+  });
+</script>

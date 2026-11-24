@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>Direct state</title>
+<input id="name" value="before"><input id="check" type="checkbox">
+<div id="text">Original</div><state-widget id="widget"></state-widget>
+<script>
+  window.events = [];
+  for (const type of ['input', 'change', 'click']) document.addEventListener(type, e => events.push(type));
+  customElements.define('state-widget', class extends HTMLElement {
+    static observedAttributes = ['data-change'];
+    attributeChangedCallback() { document.querySelector('#name').value = 'reaction'; }
+  });
+</script>

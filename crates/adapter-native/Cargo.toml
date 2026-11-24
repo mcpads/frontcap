@@ -1,0 +1,30 @@
+[package]
+name = "frontcap-adapter-native"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[features]
+fault-injection = []
+
+[lib]
+name = "frontcap_native"
+
+[dependencies]
+cdp = { path = "../cdp" }
+tokio.workspace = true
+frontcap-core = { path = "../core" }
+serde.workspace = true
+serde_json = { workspace = true, features = ["raw_value"] }
+thiserror.workspace = true
+libc = "0.2"
+sha2.workspace = true
+png.workspace = true
+flate2 = "1"
+plist = "1"
+
+[dev-dependencies]
+tokio-tungstenite.workspace = true
+futures-util.workspace = true
+tempfile.workspace = true

@@ -1,0 +1,13 @@
+<!doctype html><title>Unsaved draft</title><button id="edit">Edit draft</button>
+<script>
+window.later = false;
+let dirty = false;
+edit.onclick = () => {
+  dirty = true;
+  setTimeout(() => { location.href = '/dialog-arrived.html'; }, 199);
+  setTimeout(() => { later = true; }, 200);
+};
+addEventListener('beforeunload', event => {
+  if (dirty) { event.preventDefault(); event.returnValue = 'Unsaved draft'; }
+});
+</script>

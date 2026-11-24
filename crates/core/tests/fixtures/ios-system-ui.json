@@ -1,0 +1,14 @@
+{
+  "observation": "abcd0000-0000-0000-0000-000000000008",
+  "bundle": "com.apple.springboard",
+  "stable": true,
+  "alerts": [{
+    "label": "Open in Sample Client?",
+    "texts": ["Open in Sample Client?"],
+    "frame_mpt": [40000, 200000, 300000, 180000],
+    "buttons": [
+      {"reference":"abcd0000-0000-0000-0000-000000000008-0", "identifier":"", "label":"Cancel", "frame_mpt":[40000,330000,150000,50000], "unique":true,"enabled":true,"hittable":true},
+      {"reference":"abcd0000-0000-0000-0000-000000000008-1", "identifier":"", "label":"Open", "frame_mpt":[190000,330000,150000,50000], "unique":true,"enabled":true,"hittable":true}
+    ]
+  }]
+}

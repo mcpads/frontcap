@@ -1,0 +1,5 @@
+<!doctype html><output id="status">opening</output><script>
+const open = indexedDB.open('records', 1);
+open.onupgradeneeded = () => open.result.createObjectStore('items', {autoIncrement:true});
+open.onsuccess = () => { window.db = open.result; document.querySelector('#status').textContent = 'ready'; };
+</script>

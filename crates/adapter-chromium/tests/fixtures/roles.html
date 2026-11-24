@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8">
+<button id="save" aria-label="Save">Different visible text</button>
+<button aria-label="Save" hidden>Ignored duplicate</button>
+<label for="search">Search</label><input id="search">
+<div id="host"></div>
+<iframe title="Child controls" src="roles-child.html"></iframe>
+<script>
+const root=document.querySelector('#host').attachShadow({mode:'closed'});
+root.innerHTML='<button aria-label="Shadow">Closed root</button>';
+setTimeout(()=>{
+  const replacement=document.createElement('button');
+  replacement.id='save';replacement.setAttribute('aria-label','Submit');replacement.textContent='replacement';
+  document.querySelector('#save').replaceWith(replacement);
+},100);
+setTimeout(()=>document.querySelector('#save').setAttribute('aria-label','Ready'),200);
+setTimeout(()=>{
+  const copy=document.querySelector('#save').cloneNode(true);copy.id='duplicate';document.body.append(copy);
+},300);
+setTimeout(()=>document.querySelector('#duplicate').hidden=true,400);
+</script>

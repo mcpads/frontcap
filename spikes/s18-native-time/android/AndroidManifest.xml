@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.frontcap.s18.probe">
+  <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="35"/>
+  <application android:label="Native test fixture" android:theme="@android:style/Theme.Material.Light.NoActionBar">
+    <activity android:name="dev.frontcap.s18.ProbeActivity" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    <activity android:name="dev.frontcap.s18.VirtualActivity" android:exported="true"/>
+  </application>
+</manifest>

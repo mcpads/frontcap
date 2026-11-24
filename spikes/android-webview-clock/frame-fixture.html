@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Source-owned WebView frame admission</title>
+<script src="/frame-gate.js"></script>
+<style>body { background:#17202a; color:#f5f5f5; font:24px sans-serif; padding:32px } canvas { border:2px solid white }</style>
+<h1>WebView frame admission</h1>
+<canvas id="surface" width="200" height="100"></canvas>
+<pre id="status">Measuring held frame callbacks…</pre>
+<script>
+(async () => {
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const canvas = document.querySelector('canvas');
+  const context = canvas.getContext('2d');
+  const calls = [];
+  function draw(timestamp) {
+    calls.push(timestamp);
+    context.fillStyle = calls.length % 2 ? '#00ff00' : '#0000ff';
+    context.fillRect(0, 0, 200, 100);
+    requestAnimationFrame(draw);
+  }
+  function read() {
+    return {calls:[...calls], pixel:[...context.getImageData(50,50,1,1).data],
+      date:Date.now(), performance:performance.now(), gate:__frontcapFrames.snapshot()};
+  }
+  const report = {userAgent:navigator.userAgent, samples:{}};
+  try {
+    requestAnimationFrame(draw);
+    report.samples.initial = read();
+    await sleep(300);
+    report.samples.held = read();
+    report.firstFrame = await __frontcapFrames.advance(100);
+    report.samples.first = read();
+    await sleep(300);
+    report.samples.afterFirstHold = read();
+    report.secondFrame = await __frontcapFrames.advance(200);
+    report.samples.second = read();
+    report.checks = {
+      held:report.samples.held.calls.length === 0,
+      first:JSON.stringify(report.samples.first.calls) === '[100]',
+      heldAgain:JSON.stringify(report.samples.afterFirstHold.calls) === '[100]',
+      second:JSON.stringify(report.samples.second.calls) === '[100,200]',
+      firstPixels:JSON.stringify(report.samples.first.pixel) === '[0,255,0,255]',
+      secondPixels:JSON.stringify(report.samples.second.pixel) === '[0,0,255,255]',
+    };
+    report.passed = Object.values(report.checks).every(Boolean);
+    document.querySelector('#status').textContent = JSON.stringify(report.checks,null,2);
+  } catch (error) {
+    report.passed = false;
+    report.error = String(error);
+    document.querySelector('#status').textContent = report.error;
+  }
+  await fetch('/report', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(report)});
+})();
+</script>

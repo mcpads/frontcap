@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>same instant</title>
+<!-- Issued at the document's first instant: a frame's navigation from the markup, then a fetch. -->
+<iframe id="markup" src="https://w.test/markup"></iframe>
+<script>
+  window.got = [];
+  const seq = (name) => fetch("https://api.test/seq").then((r) => r.text()).then((t) => got.push(name + ":" + t));
+  seq("load");
+  // At one later instant, in this order: a frame's navigation, a fetch, another frame's, a fetch, and a
+  // third frame's navigation replaced at once by another.
+  setTimeout(() => {
+    const a = document.createElement("iframe"); a.src = "https://w.test/a"; document.body.append(a);
+    seq("first");
+    const b = document.createElement("iframe"); b.src = "https://w.test/b"; document.body.append(b);
+    seq("second");
+    const c = document.createElement("iframe"); c.src = "https://w.test/c"; document.body.append(c);
+    c.src = "https://w.test/c2";
+    seq("third");
+  }, 100);
+</script>

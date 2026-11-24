@@ -1,0 +1,85 @@
+{
+  "status": "ok",
+  "replayed": false,
+  "port": 41003,
+  "generation": "abcdef00-0000-4000-8000-000000000005",
+  "result": {
+    "receipt": {
+      "status": "ok",
+      "replayed": false,
+      "port": 41004,
+      "generation": "abcdef00-0000-4000-8000-000000000006",
+      "result": {
+        "input": "uikit_text_input",
+        "before": {
+          "end": 0,
+          "marked": false,
+          "start": 0,
+          "role": "text_field",
+          "identifier": "entry",
+          "label": "",
+          "token": "abcdef00-0000-4000-8000-000000000007",
+          "text": "",
+          "state": "focused"
+        },
+        "after": {
+          "end": 8,
+          "marked": false,
+          "start": 8,
+          "role": "text_field",
+          "identifier": "entry",
+          "label": "",
+          "token": "abcdef00-0000-4000-8000-000000000007",
+          "text": "Field 🌟",
+          "state": "focused"
+        }
+      },
+      "request": {
+        "operation": "replace_text",
+        "generation": "abcdef00-0000-4000-8000-000000000006",
+        "arguments": {
+          "text": "Field 🌟",
+          "end": 0,
+          "basis": {
+            "end": 0,
+            "marked": false,
+            "start": 0,
+            "role": "text_field",
+            "identifier": "entry",
+            "label": "",
+            "token": "abcdef00-0000-4000-8000-000000000007",
+            "text": "",
+            "state": "focused"
+          },
+          "start": 0
+        },
+        "request_id": 1
+      },
+      "last_id": 1,
+      "pid": 411
+    },
+    "app": {
+      "generation": "abcdef00-0000-4000-8000-000000000008",
+      "pid": 411,
+      "port": 41005
+    },
+    "reference": "abcdef00-0000-4000-8000-000000000009-24",
+    "input": "uikit_text_control",
+    "now_ns": 572000000,
+    "observation": "abcdef00-0000-4000-8000-000000000009"
+  },
+  "request": {
+    "operation": "replace_text",
+    "generation": "abcdef00-0000-4000-8000-000000000005",
+    "arguments": {
+      "observation": "abcdef00-0000-4000-8000-000000000009",
+      "text": "Field 🌟",
+      "reference": "abcdef00-0000-4000-8000-000000000009-24",
+      "end": 0,
+      "start": 0
+    },
+    "request_id": 12
+  },
+  "last_id": 12,
+  "pid": 412
+}

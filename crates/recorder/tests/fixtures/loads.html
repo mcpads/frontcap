@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>loads</title>
+<p id="loads"></p>
+<script>
+  // Counts this tab's loads of the page: a reload adds one.
+  sessionStorage.n = String(Number(sessionStorage.n || 0) + 1);
+  document.getElementById("loads").textContent = "loads:" + sessionStorage.n;
+</script>

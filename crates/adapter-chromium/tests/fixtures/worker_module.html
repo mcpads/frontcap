@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>module worker</title>
+<script>
+  // A module worker whose script imports a module over the network, then sets a 30 ms timer.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `import { lib } from "https://api.example.test/lib.mjs"; postMessage(["imported", Date.now() - 946684800000, lib]); setTimeout(() => postMessage(["t30", Date.now() - 946684800000, lib]), 30);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })), { type: "module" });
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

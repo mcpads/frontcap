@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Synchronous requests</title>
+<button id="one">One</button>
+<button id="two">Two</button>
+<button id="mixed">Mixed</button>
+<button id="same">Same origin</button>
+<button id="pre">Preflighted</button>
+<script>
+  // Each synchronous request logs its URL, status, body and the page's clock before and after it.
+  window.__log = [];
+  function sync(url, method, body) {
+    const before = Date.now();
+    const x = new XMLHttpRequest();
+    x.open(method || 'GET', url, false);
+    if (body) x.setRequestHeader('content-type', 'application/json');
+    try {
+      x.send(body || null);
+      window.__log.push(['sync', url, x.status, x.responseText, before, Date.now(), x.getAllResponseHeaders()]);
+    } catch (e) {
+      window.__log.push(['error', url, e.name, before, Date.now()]);
+    }
+  }
+  one.onclick = () => sync('https://api.example.test/one');
+  two.onclick = () => { sync('https://api.example.test/a'); sync('https://api.example.test/b'); };
+  mixed.onclick = () => {
+    fetch('https://api.example.test/async').then(r => r.text()).then(t => window.__log.push(['async', t, Date.now()]));
+    sync('https://api.example.test/one');
+  };
+  same.onclick = () => sync('/same');
+  pre.onclick = () => sync('https://api.example.test/pre', 'POST', '{"a":1}');
+  window.later = (ms, url) => setTimeout(() => sync(url), ms);
+</script>

@@ -1,0 +1,15 @@
+{
+  "name": "frontcap-webview-timeline-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test timeline.test.mjs media.test.mjs navigation.test.mjs page-events.test.mjs console.test.mjs library-read.test.mjs android-randomness.test.mjs starting_state.test.mjs"
+  },
+  "dependencies": {
+    "@sinonjs/fake-timers": "15.4.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

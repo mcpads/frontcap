@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>s5</title>
+<style>
+  #comp{position:absolute;top:0;left:0;width:50px;height:50px;background:#00c;opacity:0;transition:opacity 300ms linear}
+  #main{position:absolute;top:60px;left:0;width:50px;height:50px;background:#0c0;transition:left 300ms linear}
+</style>
+<div id="comp"></div><div id="main"></div>
+<script>
+  window.__log = [];
+  window.go = () => {
+    document.getElementById("comp").style.opacity = "1";
+    document.getElementById("main").style.left = "300px";
+    setTimeout(() => window.__log.push(["timer300", performance.now()]), 300);
+  };
+  window.sample = () => JSON.stringify({
+    t: performance.now(),
+    opacity: getComputedStyle(document.getElementById("comp")).opacity,
+    left: getComputedStyle(document.getElementById("main")).left,
+    animations: document.getAnimations().map(a => [a.currentTime, a.playState]),
+  });
+  window.rafFence = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => r(performance.now()))));
+</script>

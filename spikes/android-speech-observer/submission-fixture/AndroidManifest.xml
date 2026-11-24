@@ -1,0 +1,12 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.frontcap.speechsubmission">
+  <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="35" />
+  <queries><intent><action android:name="android.intent.action.TTS_SERVICE" /></intent></queries>
+  <application android:debuggable="true" android:label="Speech submission diagnostic">
+    <activity android:name=".SubmissionActivity" android:exported="true" android:launchMode="singleTop">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

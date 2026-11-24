@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Child pointer ownership</title>
+<style>body{margin:0}#pad{position:absolute;left:20px;top:20px;width:40px;height:40px;background:blue;touch-action:none}#events{position:absolute;top:80px}</style>
+<script>
+if(location.search==='?child') {
+  document.write('<div id="pad"></div><output id="events">[]</output>');
+  const pad=document.querySelector('#pad'), records=[];
+  let down=null;
+  for(const type of ['pointerdown','pointermove','pointerup','pointercancel','click']) {
+    pad.addEventListener(type,e=>{
+      if(type==='pointerdown'){down=e.clientX-pad.offsetLeft;pad.setPointerCapture(e.pointerId)}
+      if(type==='pointermove'&&down!==null)pad.style.left=`${e.clientX-down}px`;
+      if(type==='pointerup'||type==='pointercancel')down=null;
+      records.push([type,e.isTrusted,Date.now()-946684800000,e.pointerType]);
+      document.querySelector('#events').textContent=JSON.stringify(records);
+    });
+  }
+} else {
+  document.write('<button id="destroy">Destroy owner</button>');
+  const frame=document.createElement('iframe');frame.id='child';
+  frame.style='position:absolute;left:100px;top:100px;width:500px;height:350px;border:0;transform:scale(1.5);transform-origin:0 0';
+  frame.src=`http://localhost:${location.port}${location.pathname}?child`;
+  document.body.append(frame);
+  document.querySelector('#destroy').onclick=()=>setTimeout(()=>{
+    if(location.search==='?navigate')frame.src='count.html';else frame.remove();
+  },50);
+}
+</script>

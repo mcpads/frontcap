@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>Read-only style boundary</title>
+<style>
+#box { width: 30px; height: 30px; opacity: 0.2; background: blue; transition: width 100ms linear, opacity 100ms linear; }
+#box.changed { width: 130px; opacity: 1; }
+</style>
+<button id="change">Change</button><div id="box">Box</div>
+<script>
+window.events = [];
+const box = document.querySelector('#box');
+for (const type of ['transitionrun', 'transitionstart', 'transitionend']) {
+  box.addEventListener(type, event => events.push([type, event.propertyName, Date.now()-946684800000, event.elapsedTime]));
+}
+document.querySelector('#change').onclick = () => box.className = 'changed';
+</script>

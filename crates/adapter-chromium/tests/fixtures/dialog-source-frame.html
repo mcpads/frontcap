@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>Dialog source</title>
+<script>
+const child = new URL(location.href).searchParams.get('child');
+if (child) {
+  const frame = document.createElement('iframe');
+  frame.src = child;
+  document.documentElement.append(frame);
+}
+addEventListener('message', event => {
+  if (event.data === 'ask') confirm('same source message');
+  if (event.data === 'ask-child') frames[0].postMessage('ask', '*');
+});
+</script>

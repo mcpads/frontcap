@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>frame dialogs</title>
+<iframe id="same" srcdoc="<p>child</p>"></iframe>
+<script>
+  window.log = [];
+  window.childConfirm = () => setTimeout(() => log.push(["child", document.getElementById("same").contentWindow.confirm("from child")]), 10);
+  window.borrowed = () => setTimeout(() => {
+    const f = document.createElement("iframe"); document.body.appendChild(f);
+    log.push(["borrowed", f.contentWindow.confirm.call(window, "borrowed")]);
+  }, 10);
+</script>

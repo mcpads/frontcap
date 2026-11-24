@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>network child, immediate parent import</title>
+<script>
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  // The child host can issue its main-script request while the parent's
+  // renderer thread is blocked; starting the child still needs that thread.
+  const outer = `const w = new Worker(${JSON.stringify(location.origin + "/worker_net.js")}); w.onmessage = (e) => postMessage(e.data); importScripts("https://api.example.test/lib.js"); postMessage(["imported", Date.now() - 946684800000]);`;
+  const w = new Worker(URL.createObjectURL(new Blob([outer], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

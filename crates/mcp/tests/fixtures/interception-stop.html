@@ -1,0 +1,9 @@
+<!doctype html><title>Inspect pending save</title>
+<script>
+window.delivered = [];
+window.later = false;
+const get = name => fetch('https://api.example.test/' + name).then(r => r.text()).then(value => delivered.push(value));
+setTimeout(() => { get('first'); get('other'); }, 250);
+setTimeout(() => { later = true; }, 251);
+setTimeout(() => { get('second'); }, 400);
+</script>

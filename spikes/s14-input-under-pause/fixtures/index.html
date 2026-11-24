@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>s14</title>
+<style>body { height: 5000px; margin: 0 } #b { position: absolute; left: 10px; top: 10px; width: 100px; height: 40px }
+#q { position: absolute; left: 10px; top: 80px }</style>
+<button id="b">b</button><div id="d" style="position:absolute;left:10px;top:200px;width:100px;height:40px;background:#ccc">d</div><input id="q">
+<script>
+  window.__ran = true;
+  window.__id = Math.random();
+  window.log = [];
+  for (const t of ["pointerdown", "pointerup", "click", "dblclick", "pointermove", "wheel"]) document.getElementById("b").addEventListener(t, (e) => log.push(t + (e.detail ? ":" + e.detail : "")));
+  window.addEventListener("wheel", () => log.push("wheel@window"));
+  for (const t of ["keydown", "keypress", "beforeinput", "input", "keyup"]) document.getElementById("q").addEventListener(t, (e) => log.push(t + ":" + (e.key ?? e.data ?? "")));
+</script>

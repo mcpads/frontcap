@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>s4</title>
+<style>#box{position:absolute;top:0;left:0;width:20px;height:20px;background:#c00}</style>
+<div id="box"></div>
+<script>
+  window.__frames = [];
+  window.__done = false;
+  window.start = () => {
+    const box = document.getElementById("box");
+    let x = 0;
+    function step(ts) {
+      window.__frames.push(ts);
+      x += 4; box.style.left = x + "px";
+      if (x >= 200) { window.__done = true; return; }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  };
+</script>

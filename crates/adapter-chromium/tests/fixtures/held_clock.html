@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><title>held clock</title>
+<script>
+  // `go(delay)`: a slow request (held by its latency), and `delay` ms later a fast one and two streams;
+  // each callback logs its instant.
+  window.log = [];
+  const at = () => Math.round(performance.now());
+  window.go = (delay) => {
+    fetch("https://api.example.test/slow").then((r) => r.text()).then(() => log.push(["slow", at()]));
+    setTimeout(() => {
+      log.push(["issue", at()]);
+      fetch("https://api.example.test/fast").then((r) => r.text()).then(() => log.push(["fast", at()]));
+      const es = new EventSource("https://api.example.test/feed");
+      es.onopen = () => log.push(["sse-open", at()]);
+      es.onmessage = (e) => log.push(["sse", e.data, at()]);
+    }, delay);
+    return 0;
+  };
+  // A zero-latency fetch whose callback issues another.
+  window.chain = () => {
+    fetch("https://api.example.test/fast").then((r) => r.text()).then(() => {
+      log.push(["a", at()]);
+      return fetch("https://api.example.test/fast2").then((r) => r.text()).then(() => log.push(["b", at()]));
+    });
+    return 0;
+  };
+  // A held and a slow request the page aborts after `ms`.
+  window.abortable = (ms) => {
+    const c = new AbortController();
+    for (const name of ["held", "slow"]) {
+      fetch("https://api.example.test/" + name, { signal: c.signal }).then(() => log.push([name, at()]), () => log.push([name + "-aborted", at()]));
+    }
+    setTimeout(() => c.abort(), ms);
+    return 0;
+  };
+</script>

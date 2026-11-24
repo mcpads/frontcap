@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>passthrough</title>
+<p id="last"></p>
+<script>
+  // Opens `?sse=<url>` and/or `?ws=<url>` on request (`openAll()`); every callback logs its instant, and
+  // the last message is shown in #last.
+  window.log = [];
+  const q = new URLSearchParams(location.search);
+  const at = () => Math.round(performance.now() * 1000);
+  window.openAll = () => {
+    if (q.get("sse")) {
+      const es = new EventSource(q.get("sse"));
+      window.es = es;
+      es.onopen = () => log.push(["sse-open", at()]);
+      es.onerror = () => log.push(["sse-error", at()]);
+      es.onmessage = (e) => { log.push(["sse", e.data, at()]); document.getElementById("last").textContent = e.data; };
+    }
+    if (q.get("ws")) {
+      const ws = new WebSocket(q.get("ws"));
+      window.ws = ws;
+      ws.onopen = () => { log.push(["ws-open", at()]); ws.send("hi"); };
+      ws.onmessage = (e) => { log.push(["ws", e.data, at()]); document.getElementById("last").textContent = e.data; };
+      ws.onclose = (e) => log.push(["ws-close", e.code, at()]);
+    }
+    return 0;
+  };
+  window.timerFired = false;
+  setTimeout(() => { timerFired = true; }, 400);
+</script>

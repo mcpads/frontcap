@@ -1,0 +1,95 @@
+{
+  "before": {
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "touches": [
+      {
+        "x": 20,
+        "phase": 3,
+        "hit": "UIButton",
+        "y": 30,
+        "input_label": "",
+        "view": "UIButton",
+        "identifier": "",
+        "label": "Open",
+        "timestamp": 1.0,
+        "input_identifier": "",
+        "input_role": "none"
+      }
+    ],
+    "serial": 2,
+    "now_ns": 0
+  },
+  "input": "xctest_timed_press",
+  "clock_reply": {
+    "drain_result": 0,
+    "applied": true,
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "now_ns": 570000000,
+    "last_id": 2,
+    "before_ns": 500000000,
+    "advance_result": 0,
+    "replayed": false,
+    "request": {
+      "operation": "advance",
+      "generation": "abcdef00-0000-4000-8000-000000000001",
+      "delta_ns": 70000000,
+      "request_id": 2
+    },
+    "pid": 410,
+    "status": "ok",
+    "port": 41001
+  },
+  "began": {
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "touches": [
+      {
+        "x": 64,
+        "phase": 0,
+        "hit": "UITextField",
+        "y": 50,
+        "input_label": "Field",
+        "view": "UITextField",
+        "identifier": "",
+        "label": "Field",
+        "timestamp": 2.0,
+        "input_identifier": "",
+        "input_role": "text_field"
+      }
+    ],
+    "serial": 3,
+    "now_ns": 500000000
+  },
+  "reference": "abcdef00-0000-4000-8000-000000000002-3",
+  "observation": "abcdef00-0000-4000-8000-000000000002",
+  "clock_request": {
+    "operation": "advance",
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "delta_ns": 70000000,
+    "request_id": 2
+  },
+  "ended": {
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "touches": [
+      {
+        "x": 64,
+        "phase": 3,
+        "hit": "UITextField",
+        "y": 50,
+        "input_label": "Field",
+        "view": "UITextField",
+        "identifier": "",
+        "label": "Field",
+        "timestamp": 3.0,
+        "input_identifier": "",
+        "input_role": "text_field"
+      }
+    ],
+    "serial": 4,
+    "now_ns": 570000000
+  },
+  "app": {
+    "generation": "abcdef00-0000-4000-8000-000000000001",
+    "pid": 410,
+    "port": 41001
+  }
+}

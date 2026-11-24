@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>transport</title>
+<script>
+  // Probes every loopback name on the port given as `?port=`; opaque answers are enough.
+  const port = new URLSearchParams(location.search).get("port");
+  window.results = {};
+  window.probe = () => Promise.all(["localhost", "127.0.0.1", "[::1]"].map((h) =>
+    fetch(`http://${h}:${port}/probe.txt?from=${encodeURIComponent(h)}`, { mode: "no-cors" })
+      .then(() => { results[h] = "ok"; }, (e) => { results[h] = "failed"; })));
+</script>

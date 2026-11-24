@@ -1,0 +1,319 @@
+diff --git a/BUILD.gn b/BUILD.gn
+index 76391be..543a9f7 100644
+--- a/BUILD.gn
++++ b/BUILD.gn
+@@ -3598,6 +3598,7 @@ v8_header_set("v8_headers") {
+     "include/v8-initialization.h",
+     "include/v8-internal.h",
+     "include/v8-isolate.h",
++    "include/v8-atomics-wait.h",
+     "include/v8-json.h",
+     "include/v8-local-handle.h",
+     "include/v8-locker.h",
+diff --git a/include/v8-atomics-wait.h b/include/v8-atomics-wait.h
+new file mode 100644
+index 0000000..c616444
+--- /dev/null
++++ b/include/v8-atomics-wait.h
+@@ -0,0 +1,41 @@
++// Copyright 2026 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++#ifndef INCLUDE_V8_ATOMICS_WAIT_H_
++#define INCLUDE_V8_ATOMICS_WAIT_H_
++
++#include <cstdint>
++#include <memory>
++#include "v8config.h"
++
++namespace v8 {
++class Isolate;
++
++// Embedder-controlled synchronous atomic waits. Callbacks run under V8's wait
++// lock, potentially on the notifying thread. They must not re-enter V8 or call
++// WakeUp synchronously. The observer must outlive the isolate's active wait.
++class V8_EXPORT AtomicsWaitWakeHandle {
++ public:
++  virtual ~AtomicsWaitWakeHandle() = default;
++  virtual void WakeUp() = 0;
++};
++
++class V8_EXPORT AtomicsWaitObserver {
++ public:
++  virtual ~AtomicsWaitObserver() = default;
++  // Configure on the isolate thread outside an active synchronous wait.
++  static void SetForIsolate(Isolate* isolate, AtomicsWaitObserver* observer);
++  virtual int64_t NowMicroseconds() = 0;
++  // deadline_us is INT64_MAX for an infinite wait. Repeated after an interrupt
++  // or spurious wake, with the same deadline and handle.
++  virtual void OnWait(std::shared_ptr<AtomicsWaitWakeHandle> handle,
++                      int64_t deadline_us) = 0;
++  // Before notification, interrupt handling, timeout return or termination.
++  // May be repeated; the embedder must make this transition idempotent.
++  virtual void OnWake() = 0;
++};
++
++}  // namespace v8
++
++#endif  // INCLUDE_V8_ATOMICS_WAIT_H_
+diff --git a/src/api/api.cc b/src/api/api.cc
+index 77a358b..33d2a8c 100644
+--- a/src/api/api.cc
++++ b/src/api/api.cc
+@@ -36,6 +36,8 @@
+ #include "include/v8-wasm.h"
+ #include "src/api/api-arguments.h"
+ #include "src/api/api-inl.h"
++#include "src/execution/futex-emulation.h"
++#include "include/v8-atomics-wait.h"
+ #include "src/api/api-natives.h"
+ #include "src/base/bit-field.h"
+ #include "src/base/hashing.h"
+@@ -11156,6 +11158,12 @@ bool Isolate::IsInUse() {
+   return i_isolate->IsInUse();
+ }
+ 
++void AtomicsWaitObserver::SetForIsolate(Isolate* isolate, AtomicsWaitObserver* observer) {
++  auto* node = reinterpret_cast<i::Isolate*>(isolate)->futex_wait_list_node();
++  CHECK(!node->IsInSyncWait());
++  node->SetObserver(observer);
++}
++
+ void Isolate::SetAllowAtomicsWait(bool allow) {
+   i::Isolate* i_isolate = reinterpret_cast<i::Isolate*>(this);
+   i_isolate->set_allow_atomics_wait(allow);
+diff --git a/src/execution/futex-emulation.cc b/src/execution/futex-emulation.cc
+index 3d0c691..9288415 100644
+--- a/src/execution/futex-emulation.cc
++++ b/src/execution/futex-emulation.cc
+@@ -5,6 +5,7 @@
+ #include "src/execution/futex-emulation.h"
+ 
+ #include <limits>
++#include "include/v8-atomics-wait.h"
+ 
+ #include "src/api/api-inl.h"
+ #include "src/base/lazy-instance.h"
+@@ -127,6 +128,45 @@ DEFINE_LAZY_LEAKY_OBJECT_GETTER(FutexWaitList, GetWaitList)
+ 
+ }  // namespace
+ 
++// The global wait lock protects node_ through invalidation and every wake.
++// Keeping the handle alive does not keep the isolate or its futex node alive.
++class AtomicsWaitWakeHandleImpl final : public v8::AtomicsWaitWakeHandle {
++ public:
++  explicit AtomicsWaitWakeHandleImpl(FutexWaitListNode* node) : node_(node) {}
++  void WakeUp() override {
++    NoGarbageCollectionMutexGuard lock_guard(GetWaitList()->mutex());
++    if (node_) node_->cond_.NotifyOne();
++  }
++  void Invalidate() { node_ = nullptr; }  // Under the global wait lock.
++ private:
++  FutexWaitListNode* node_;
++};
++
++base::TimeTicks FutexWaitListNode::WaitNow() const {
++  return observer_ ? base::TimeTicks::FromInternalValue(observer_->NowMicroseconds())
++                   : base::TimeTicks::Now();
++}
++
++// Called under the wait-list lock, before a notification claims this node.
++// A controlled deadline is already expired at its logical instant, even if
++// the waiting thread has not yet acquired the lock to observe that instant.
++// Wake it to finish the timeout without consuming a notification count.
++bool FutexWaitListNode::WakeIfControlledWaitExpired() {
++  if (!observer_ || !observer_has_deadline_ || WaitNow() < observer_deadline_) {
++    return false;
++  }
++  NotifyObserver();
++  cond_.NotifyOne();
++  return true;
++}
++
++void FutexWaitListNode::NotifyObserver() {
++  if (observer_waiting_) {
++    observer_waiting_ = false;
++    observer_->OnWake();
++  }
++}
++
+ bool FutexWaitListNode::CancelTimeoutTask() {
+   DCHECK(IsAsync());
+   if (async_state_->timeout_task_id == CancelableTaskManager::kInvalidTaskId) {
+@@ -151,6 +191,7 @@ void FutexWaitListNode::NotifyWake() {
+ 
+   // Set the flag first so a woken thread will see it set.
+   interrupted_ = true;
++  NotifyObserver();
+   // if not waiting, this will not have any effect.
+   cond_.NotifyOne();
+ }
+@@ -362,7 +403,7 @@ Tagged<Object> FutexEmulation::WaitWasmManagedObject(
+ 
+   base::TimeTicks timeout_time;
+   if (use_timeout) {
+-    base::TimeTicks current_time = base::TimeTicks::Now();
++    base::TimeTicks current_time = node->WaitNow();
+     timeout_time = current_time + rel_timeout;
+   }
+ 
+@@ -433,7 +474,7 @@ Tagged<Object> FutexEmulation::WaitSync(Isolate* isolate, void* wait_location,
+ 
+   base::TimeTicks timeout_time;
+   if (use_timeout) {
+-    base::TimeTicks current_time = base::TimeTicks::Now();
++    base::TimeTicks current_time = node->WaitNow();
+     timeout_time = current_time + rel_timeout;
+   }
+ 
+@@ -468,9 +509,13 @@ DirectHandle<Object> FutexEmulation::WaitSyncImpl(
+                          isolate);
+   }
+ 
++  node->observer_has_deadline_ = use_timeout;
++  node->observer_deadline_ = timeout_time;
+   if (wait_location) node->wait_location_ = *wait_location;
+   node->waiting_ = true;
+   wait_list->AddNode(node);
++  auto wake = node->observer_
++      ? std::make_shared<AtomicsWaitWakeHandleImpl>(node) : nullptr;
+ 
+   while (true) {
+     if (V8_UNLIKELY(node->interrupted_)) {
+@@ -479,6 +524,7 @@ DirectHandle<Object> FutexEmulation::WaitSyncImpl(
+ 
+       // Unlock the mutex here to prevent deadlock from lock ordering between
+       // mutex and mutexes locked by HandleInterrupts.
++      node->NotifyObserver();
+       lock_guard.Unlock();
+ 
+       // Because the mutex is unlocked, we have to be careful about not
+@@ -516,9 +562,24 @@ DirectHandle<Object> FutexEmulation::WaitSyncImpl(
+       break;
+     }
+ 
++    // A virtual wait is woken by its clock's coordinator, never by wall time.
++    // Check expiration before publishing the waiting vote: a zero timeout must
++    // not release time or allow a frame to overtake this task.
++    if (wake) {
++      if (use_timeout && node->WaitNow() >= timeout_time) {
++        result = direct_handle(Smi::FromInt(WaitReturnValue::kTimedOut), isolate);
++        break;
++      }
++      node->observer_waiting_ = true;
++      node->observer_->OnWait(wake, use_timeout ? timeout_time.ToInternalValue()
++                                               : std::numeric_limits<int64_t>::max());
++      node->cond_.Wait(GetWaitList()->mutex());
++      continue;
++    }
++
+     // No interrupts, now wait.
+     if (use_timeout) {
+-      base::TimeTicks current_time = base::TimeTicks::Now();
++      base::TimeTicks current_time = node->WaitNow();
+       if (current_time >= timeout_time) {
+         result =
+             direct_handle(Smi::FromInt(WaitReturnValue::kTimedOut), isolate);
+@@ -537,6 +598,8 @@ DirectHandle<Object> FutexEmulation::WaitSyncImpl(
+     // Spurious wakeup, interrupt or timeout.
+   }
+ 
++  node->NotifyObserver();
++  if (wake) wake->Invalidate();
+   node->waiting_ = false;
+   wait_list->RemoveNode(node);
+   return result;
+@@ -713,6 +776,10 @@ int FutexEmulation::Wake(void* wait_location, uint32_t num_waiters_to_wake) {
+       node = node->next_;
+       continue;
+     }
++    if (node->WakeIfControlledWaitExpired()) {
++      node = node->next_;
++      continue;
++    }
+     // Relying on wait_location_ here is not enough, since we need to guard
+     // against the case where the BackingStore of the node has been deleted
+     // during an async wait and a new BackingStore recreated in the same memory
+@@ -735,6 +802,7 @@ int FutexEmulation::Wake(void* wait_location, uint32_t num_waiters_to_wake) {
+         NotifyAsyncWaiter(node);
+       } else {
+         // WaitSync will remove the node from the list.
++        node->NotifyObserver();
+         node->cond_.NotifyOne();
+       }
+       node = next_node;
+@@ -799,9 +867,14 @@ int FutexEmulation::Wake(Address raw_waitqueue, uint32_t num_waiters_to_wake) {
+       node = node->next_;
+       continue;
+     }
++    if (node->WakeIfControlledWaitExpired()) {
++      node = node->next_;
++      continue;
++    }
+     node->waiting_ = false;
+ 
+     // WaitSyncImpl will remove the node from the list.
++    node->NotifyObserver();
+     node->cond_.NotifyOne();
+     node = node->next_;
+     if (num_waiters_to_wake != kWakeAll) {
+diff --git a/src/execution/futex-emulation.h b/src/execution/futex-emulation.h
+index baad1a2..2f9b448 100644
+--- a/src/execution/futex-emulation.h
++++ b/src/execution/futex-emulation.h
+@@ -26,6 +26,8 @@
+ namespace v8 {
+ 
+ class Promise;
++class AtomicsWaitObserver;
++class AtomicsWaitWakeHandle;
+ 
+ namespace base {
+ class TimeDelta;
+@@ -35,6 +37,7 @@ namespace internal {
+ 
+ class BackingStore;
+ class FutexWaitList;
++class AtomicsWaitWakeHandleImpl;
+ #if V8_ENABLE_WEBASSEMBLY
+ class FutexManagedObjectWaitList;
+ template <class CppType>
+@@ -62,6 +65,10 @@ class FutexWaitListNode {
+   FutexWaitListNode& operator=(const FutexWaitListNode&) = delete;
+ 
+   void NotifyWake();
++  void SetObserver(v8::AtomicsWaitObserver* observer) { observer_ = observer; }
++  base::TimeTicks WaitNow() const;
++  void NotifyObserver();
++  bool WakeIfControlledWaitExpired();
+ 
+   bool IsAsync() const { return async_state_ != nullptr; }
+   bool IsWaiting() const { return waiting_.load(std::memory_order_relaxed); }
+@@ -73,6 +80,7 @@ class FutexWaitListNode {
+ 
+  private:
+   friend class FutexEmulation;
++  friend class AtomicsWaitWakeHandleImpl;
+   friend class FutexWaitList;
+ #if V8_ENABLE_WEBASSEMBLY
+   friend class FutexManagedObjectWaitList;
+@@ -130,6 +138,10 @@ class FutexWaitListNode {
+   };
+ 
+   base::ConditionVariable cond_;
++  v8::AtomicsWaitObserver* observer_ = nullptr;
++  bool observer_waiting_ = false;
++  bool observer_has_deadline_ = false;
++  base::TimeTicks observer_deadline_;
+   // prev_ and next_ are protected by `GetWaitList()::mutex()`.
+   FutexWaitListNode* prev_ = nullptr;
+   FutexWaitListNode* next_ = nullptr;
+@@ -196,6 +208,7 @@ class FutexManagedObjectWaitList {
+ 
+  private:
+   friend class FutexEmulation;
++  friend class AtomicsWaitWakeHandleImpl;
+ 
+   bool NodeIsOnList(FutexWaitListNode* node, FutexWaitListNode* head) {
+     for (FutexWaitListNode* n = head; n; n = n->next_) {

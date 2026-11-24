@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>worker released fetch then import</title>
+<script>
+  // A worker's fetch (5 ms, released by the platform at its issue), then a synchronous import 1 ms later.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `const now = () => Date.now() - 946684800000; fetch("https://api.example.test/b").then(r => r.text()).then(b => postMessage([b, now()])); setTimeout(() => { importScripts("https://api.example.test/lib.js"); postMessage(["imported", now()]); }, 1);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

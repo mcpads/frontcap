@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>adversary</title>
+<style>button{position:absolute;left:10px;top:10px;width:120px;height:40px}</style>
+<body>
+<script>
+  // Swaps the target exactly when the platform releases its freeze: on `resume`, and in the first
+  // animation frame after it. Records the generation of every clicked node.
+  window.__clicks = [];
+  window.__lifecycle = [];
+  let gen = 0;
+  function swap() {
+    document.querySelectorAll("button").forEach(b => b.remove());
+    const b = document.createElement("button");
+    b.textContent = "target";
+    b.dataset.gen = String(++gen);
+    b.addEventListener("click", (e) => window.__clicks.push(Number(e.target.dataset.gen)));
+    document.body.appendChild(b);
+  }
+  window.__gen = () => gen;
+  swap();
+  document.addEventListener("freeze", () => window.__lifecycle.push("freeze"));
+  document.addEventListener("resume", () => {
+    window.__lifecycle.push("resume");
+    swap();
+    requestAnimationFrame(() => swap());
+  });
+</script>
+</body>

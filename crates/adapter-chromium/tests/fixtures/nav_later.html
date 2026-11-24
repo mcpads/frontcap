@@ -1,0 +1,5 @@
+<!doctype html><meta charset="utf-8"><title>navigates later</title>
+<script>
+  // Navigates by itself 300 ms after it started, to `to` — in the middle of whatever budget runs then.
+  setTimeout(() => { location.href = new URLSearchParams(location.search).get("to"); }, 300);
+</script>

@@ -1,0 +1,13 @@
+<!doctype html><meta charset="utf-8"><title>preflight</title>
+<label>Name <input id="name" value="Ada"></label>
+<button id="save">Save</button><p id="out"></p>
+<script>
+  document.getElementById("save").addEventListener("click", async () => {
+    try {
+      const res = await fetch("https://api.example.test/profile", { method: "POST", headers: { "content-type": "application/json" }, body: "{}" });
+      document.getElementById("out").textContent = "status " + res.status + " " + (await res.text());
+    } catch (e) {
+      document.getElementById("out").textContent = "failed";
+    }
+  });
+</script>

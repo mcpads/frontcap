@@ -1,0 +1,15 @@
+<!doctype html><title>Confirm save</title><output id="out">editing</output>
+<script>
+window.answers = [];
+window.later = false;
+let actor = window;
+if (new URLSearchParams(location.search).has('frame')) {
+  const frame = document.createElement('iframe');
+  document.body.append(frame);
+  actor = frame.contentWindow;
+}
+setTimeout(() => { if (new URLSearchParams(location.search).has('alert')) { actor.alert('Save draft?'); answers.push('alert'); } else { answers.push(actor.confirm('Save draft?')); } out.textContent = 'answered'; }, 250);
+setTimeout(() => { later = true; }, 251);
+setTimeout(() => { answers.push(actor.confirm('Configured answer')); }, 400);
+setTimeout(() => { answers.push(actor.prompt('Name draft', 'untitled')); }, 700);
+</script>

@@ -1,0 +1,23 @@
+<!doctype html><title>Save feedback focus</title>
+<input id="initial"><input id="saved"><input id="again"><output id="out">editing</output>
+<script>
+window.later = false;
+initial.focus();
+let destination = saved;
+if (location.search === '?shadow') {
+  const host = document.createElement('section');
+  document.body.append(host);
+  host.attachShadow({mode:'open'}).innerHTML = '<input id="saved">';
+  destination = host.shadowRoot.querySelector('input');
+}
+if (location.search === '?frame') {
+  const frame = document.createElement('iframe');
+  document.body.append(frame);
+  frame.contentDocument.body.innerHTML = '<input id="saved">';
+  destination = frame.contentDocument.querySelector('input');
+}
+setTimeout(() => { destination.focus(); out.textContent = 'saved'; }, 250);
+setTimeout(() => { later = true; }, 251);
+setTimeout(() => { again.focus(); out.textContent = 'again'; }, 400);
+setTimeout(() => { again.blur(); out.textContent = 'blurred'; }, 500);
+</script>

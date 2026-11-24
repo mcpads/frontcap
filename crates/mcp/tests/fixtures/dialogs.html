@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>dialogs</title>
+<style>button { position: absolute; left: 10px; top: 10px; width: 120px; height: 40px; }</style>
+<button id="del">Delete</button><ul><li id="item">precious</li></ul>
+<script>
+  window.log = [];
+  const t = () => Date.now() - 946684800000;
+  document.getElementById("del").addEventListener("click", () => {
+    if (confirm("Delete?")) document.getElementById("item").remove();
+  });
+  window.timers = () => {
+    setTimeout(() => { log.push(["before-alert", t()]); alert("hi"); log.push(["after-alert", t()]); }, 100);
+    setTimeout(() => { const r = confirm("sure?"); log.push(["confirm", r, t()]); }, 200);
+    setTimeout(() => { const r = prompt("name?", "def"); log.push(["prompt", r, t()]); }, 300);
+    setTimeout(() => log.push(["timer-400", t()]), 400);
+  };
+  window.boom = () => setTimeout(() => { throw new Error("boom"); }, 50);
+</script>

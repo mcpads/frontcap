@@ -1,0 +1,42 @@
+[package]
+name = "frontcap-recorder"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+name = "frontcap_recorder"
+
+[[bin]]
+name = "frontcap-recorder"
+path = "src/main.rs"
+
+[features]
+# Aborts the recorder at named points of a request (FRONTCAP_FAULT=<request_id>@<point>) for recovery tests.
+fault-injection = ["frontcap-core/fault-injection", "frontcap-adapter-chromium/fault-injection"]
+
+[dependencies]
+frontcap-service-fixture = { path = "../service-fixture" }
+frontcap-adapter-native = { path = "../adapter-native" }
+frontcap-core = { path = "../core" }
+frontcap-adapter-chromium = { path = "../adapter-chromium" }
+frontcap-recorder-protocol = { path = "../recorder-protocol" }
+frontcap-proxy = { path = "../proxy" }
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tempfile.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[dev-dependencies]
+browser-pin = { path = "../browser-pin" }
+flate2 = "1"
+tiny_http.workspace = true
+tokio-tungstenite.workspace = true
+futures-util.workspace = true
+libc = "0.2"

@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>s2</title>
+<script>
+  window.__log = [];
+  const log = (k) => window.__log.push([k, performance.now()]);
+  window.run = (mode) => {
+    log("start-" + mode);
+    setTimeout(() => log("timer100"), 100);
+    setTimeout(() => log("timer400"), 400);
+    setTimeout(() => {
+      log("fetch-a-issued");
+      fetch("a.json").then(r => r.text()).then(() => log("fetch-a-done"));
+      fetch("b.json").then(r => r.text()).then(() => log("fetch-b-done"));
+    }, 50);
+  };
+</script>

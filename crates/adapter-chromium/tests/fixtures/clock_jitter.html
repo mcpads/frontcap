@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>clock jitter</title>
+<script>
+  // Reads the page's clock at 60 instants (one timer each, 1 to 60 ms) as the engine coarsens it:
+  // `performance.now()` and an event's `timeStamp`, in microseconds.
+  window.scriptStartedAt = performance.now();
+  window.reads = [];
+  for (let i = 1; i <= 60; i++) {
+    setTimeout(() => {
+      const e = new Event("x");
+      reads.push([Math.round(performance.now() * 1000), Math.round(e.timeStamp * 1000)]);
+    }, i);
+  }
+  // And 20 animation frames' timestamps, whatever instants the frames fall at.
+  let frames = 0;
+  const frame = (t) => {
+    reads.push([Math.round(t * 1000)]);
+    if (++frames < 20) requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+</script>

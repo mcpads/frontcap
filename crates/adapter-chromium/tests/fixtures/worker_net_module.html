@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>network module worker</title>
+<script>
+  // A module worker whose script comes over the network and imports a module (20 ms).
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const w = new Worker("worker_net.mjs", { type: "module" });
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

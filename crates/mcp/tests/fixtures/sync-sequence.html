@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Mixed synchronous sequence</title>
+<button id="plain">Plain fetch</button>
+<button id="preflight">Preflight fetch</button>
+<script>
+  window.__log = [];
+  function record(role, body) {
+    const entry = [role, body, Date.now()];
+    window.__log.push(entry);
+    console.log(JSON.stringify(entry));
+  }
+  function run(preflight) {
+    const url = 'https://api.example.test/sequence';
+    const options = {method: 'POST', body: 'async'};
+    if (preflight) options.headers = {'x-prefix-test': 'yes'};
+    fetch(url, options).then(r => r.text()).then(body => record('async', body));
+    const x = new XMLHttpRequest();
+    x.open('POST', url, false);
+    x.send('sync');
+    record('sync', x.responseText);
+    fetch(url, {method: 'POST', body: 'after'}).then(r => r.text()).then(body => record('after', body));
+  }
+  plain.onclick = () => run(false);
+  preflight.onclick = () => run(true);
+</script>

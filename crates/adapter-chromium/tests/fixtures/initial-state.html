@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>Initial state</title>
+<output id="boot"></output>
+<script>
+  window.boot = {local: localStorage.getItem('cart'), session: sessionStorage.getItem('login')};
+  document.querySelector('#boot').textContent = JSON.stringify(boot);
+  localStorage.setItem('cart', 'changed-by-app');
+  sessionStorage.setItem('login', 'changed-by-app');
+</script>

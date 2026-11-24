@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>fetch</title>
+<script>
+  window.__log = [];
+  const t = () => Date.now() - 946684800000;
+  window.go = (urls) => urls.forEach((u) => {
+    window.__log.push(["issued", u, t()]);
+    fetch(u).then((r) => r.text().then((body) => window.__log.push(["done", u, r.status, body, t()])))
+            .catch(() => window.__log.push(["failed", u, t()]));
+  });
+</script>

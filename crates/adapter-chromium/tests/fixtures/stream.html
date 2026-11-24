@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>stream</title>
+<script>
+  // Opens a Server-Sent Events stream and a WebSocket at load; every callback logs its virtual instant.
+  window.log = [];
+  const at = () => Math.round(performance.now());
+  const es = new EventSource("https://api.example.test/feed");
+  es.onopen = () => log.push(["sse-open", at()]);
+  es.onmessage = (e) => log.push(["sse", e.data, at()]);
+  es.addEventListener("tick", (e) => log.push(["sse-tick", e.data, e.lastEventId, at()]));
+  es.onerror = () => log.push(["sse-error", at()]);
+  const ws = new WebSocket("wss://api.example.test/chat");
+  ws.onopen = () => { log.push(["ws-open", at()]); ws.send("hello"); };
+  ws.onmessage = (e) => { log.push(["ws", e.data, at()]); if (e.data === "ping") ws.send("pong"); };
+  ws.onclose = (e) => log.push(["ws-close", e.code, at()]);
+  window.timerFired = false;
+  setTimeout(() => { timerFired = true; }, 400);
+</script>

@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>Scoped storage</title>
+<div id="anchor">Storage context</div><output id="boot"></output>
+<iframe id="child" srcdoc="<div id='inner'>Child context</div>"></iframe>
+<script>
+  Object.defineProperty(window, "origin", {value: "forged-main-world-origin"});
+  window.storageEvents = [];
+  window.addEventListener('storage', event => storageEvents.push(event.key));
+  document.querySelector('#boot').textContent = localStorage.getItem('cart') || 'empty';
+</script>

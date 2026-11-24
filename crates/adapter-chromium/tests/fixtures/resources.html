@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>resources</title>
+<script>
+  // Subresources at 20 ms, all mocked: another origin's (50 ms latency), the page's own (30 ms), one that
+  // redirects to it (10 ms), a frame and a worker's script (60 ms).
+  setTimeout(() => {
+    fetch("https://api.example.test/r").then((r) => r.text());
+    fetch("mocked.txt").then((r) => r.text());
+    fetch("redir").then((r) => r.text());
+    const f = document.createElement("iframe");
+    f.src = "frame_mock.html";
+    document.body.appendChild(f);
+    new Worker("worker_mock.js");
+  }, 20);
+  window.timings = () => JSON.stringify(performance.getEntriesByType("resource").map((e) =>
+    [e.name.replace(/^.*\//, ""), ...[e.startTime, e.fetchStart, e.requestStart, e.responseStart, e.responseEnd].map(Math.round)]));
+</script>

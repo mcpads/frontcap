@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>Touch</title>
+<style>body { margin: 0; } #pad { position: absolute; left: 0; top: 0; width: 300px; height: 200px; background: #eee; touch-action: none; }</style>
+<div id="pad"></div>
+<script>
+  // Every touch, pointer, mouse-compatibility and gesture event on the pad: [type, x, y, pointerType, virtual ms].
+  window.seen = [];
+  for (const type of ["touchstart", "touchmove", "touchend", "touchcancel", "pointerdown", "pointermove", "pointerup", "pointercancel", "mousedown", "mouseup", "click", "contextmenu"]) {
+    document.getElementById("pad").addEventListener(type, (e) => {
+      const p = e.touches ? (e.changedTouches[0] || {}) : e;
+      seen.push([type, Math.round(p.clientX), Math.round(p.clientY), e.pointerType || null, Math.round(performance.now())]);
+    });
+  }
+  window.touchSupport = [navigator.maxTouchPoints, "ontouchstart" in window, matchMedia("(pointer: coarse)").matches];
+</script>

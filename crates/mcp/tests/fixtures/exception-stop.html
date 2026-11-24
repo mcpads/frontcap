@@ -1,0 +1,11 @@
+<!doctype html><title>Exception boundary</title>
+<script>
+window.events = [];
+const fail = (message) => { if (location.search) {
+  if (location.search === "?twins") Promise.reject(new Error(message));
+  return Promise.reject(new Error(message));
+} throw new Error(message); };
+setTimeout(() => { events.push('error'); fail('scheduled failure'); }, 250);
+setTimeout(() => { events.push('later'); }, 251);
+setTimeout(() => { events.push('second-error'); fail('second failure'); }, 400);
+</script>

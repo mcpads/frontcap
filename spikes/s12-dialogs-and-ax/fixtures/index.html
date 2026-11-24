@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>s12</title>
+<button id="b">Save</button><input id="name" aria-label="Name" value="x"><a href="#x">Link</a>
+<div role="dialog" aria-label="Panel"><p>Inside</p></div>
+<script>
+  window.log = [];
+  const t = () => Date.now() - 946684800000;
+  setTimeout(() => { log.push(["before-alert", t()]); alert("hi"); log.push(["after-alert", t()]); }, 100);
+  setTimeout(() => { const r = confirm("sure?"); log.push(["confirm", r, t()]); }, 200);
+  setTimeout(() => { const r = prompt("name?", "def"); log.push(["prompt", r, t()]); }, 300);
+  setTimeout(() => log.push(["timer-400", t()]), 400);
+</script>

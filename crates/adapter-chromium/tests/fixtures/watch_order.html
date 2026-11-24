@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>watch and request order</title>
+<p id="status">idle</p>
+<script>
+  async function go(kind = "fetch") {
+    const request = url => {
+      if (kind === "fetch") return fetch(url);
+      const frame = document.createElement("iframe");
+      frame.src = url;
+      document.body.append(frame);
+    };
+    const status = document.querySelector("#status");
+    status.textContent = "before";
+    await Promise.resolve();
+    request("https://api.example.test/first");
+    status.textContent = "between";
+    await Promise.resolve();
+    request("https://api.example.test/second");
+    status.textContent = "after";
+  }
+</script>

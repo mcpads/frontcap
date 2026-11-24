@@ -1,0 +1,9 @@
+<!doctype html><meta charset="utf-8"><title>latency</title>
+<p id="out"></p>
+<script>
+  window.appStarted = true;
+  setTimeout(() => fetch("https://api.example.test/slow").then((r) => r.text()).then((t) => {
+    const p = document.getElementById("out");
+    p.textContent = (p.textContent ? p.textContent + "," : "") + t + "@" + (Date.now() - 946684800000);
+  }), 100);
+</script>

@@ -1,0 +1,7 @@
+<!doctype html>
+<button id=open onclick="window.w = window.open('/popup-closing.html', 'p')">open</button>
+<p id=status>open</p>
+<script>
+let closings = 0;
+addEventListener('message', e => { if (e.data === 'closing') document.getElementById('status').textContent = 'closings:' + (++closings); });
+</script>

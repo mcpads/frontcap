@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><title>Shadow component discovery</title>
+<div id="host"></div><div id="closed-host"></div>
+<script>
+  const child = location.search === '?child';
+  const suffix = child ? 'child' : 'main';
+  const root = document.querySelector('#host').attachShadow({mode:'open'});
+  root.innerHTML = `<button data-testid="save">Save ${suffix}</button><span id="status-${suffix}" data-testid="status" role="status" aria-label="Status ${suffix}">Idle ${suffix}</span><button data-testid="replace">Replace ${suffix}</button><div id="nested"></div>`;
+  root.querySelector('#nested').attachShadow({mode:'open'}).innerHTML = `<span>Deep ${suffix}</span>`;
+  root.querySelector('[data-testid=save]').onclick = () => {
+    const status = root.querySelector('[data-testid=status]');
+    status.textContent = `Saving ${suffix}`;
+    setTimeout(() => status.textContent = `Saved ${suffix}`, 123);
+  };
+  root.querySelector('[data-testid=replace]').onclick = () => {
+    const status = root.querySelector('[data-testid=status]');
+    status.replaceWith(status.cloneNode(true));
+  };
+  document.querySelector('#closed-host').attachShadow({mode:'closed'}).innerHTML = '<span id="closed-secret">Closed content</span>';
+  if (!child) {
+    const frame = document.createElement('iframe');
+    frame.id = 'editor'; frame.width = '500'; frame.height = '160';
+    frame.src = `http://localhost:${location.port}${location.pathname}?child`;
+    root.querySelector('#nested').shadowRoot.append(frame);
+    const create = document.createElement('button');
+    create.textContent = 'Add component';
+    create.onclick = () => {
+      const host = document.createElement('div');
+      const nested = host.attachShadow({mode:'open'});
+      nested.innerHTML = '<span id="late-status">Waiting</span>';
+      root.append(host);
+      setTimeout(() => nested.querySelector('#late-status').textContent = 'Ready', 123);
+    };
+    root.append(create);
+  }
+</script>

@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>worker terminate</title>
+<script>
+  // A busy worker (a message every 5 ms) the page terminates at 50 ms; the page's own timer runs at 120.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const src = `setInterval(() => postMessage(["tick", Date.now() - 946684800000]), 5);`;
+  const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+  setTimeout(() => w.terminate(), 50);
+  setTimeout(() => got.push(["page120", t(), t()]), 120);
+</script>

@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>nested worker</title>
+<script>
+  // A worker that starts its own worker; the inner one's timer fires at 30 ms of its clock.
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const inner = `setTimeout(() => postMessage(["inner30", Date.now() - 946684800000]), 30);`;
+  const outer = `const w = new Worker(URL.createObjectURL(new Blob([${JSON.stringify(inner)}], { type: "text/javascript" }))); w.onmessage = (e) => postMessage(e.data);`;
+  const w = new Worker(URL.createObjectURL(new Blob([outer], { type: "text/javascript" })));
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>network worker</title>
+<script>
+  // A classic worker whose script comes over the network (the platform passes it through).
+  window.got = [];
+  const t = () => Date.now() - 946684800000;
+  const w = new Worker("worker_net.js");
+  w.onmessage = (e) => got.push([...e.data, t()]);
+</script>

@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>restart</title>
+<p id="seq1"></p><p id="held"></p><p id="seq2"></p>
+<script>
+  const show = (id, url) => fetch(url).then((r) => r.text()).then((t) => { document.getElementById(id).textContent = t; });
+  setTimeout(() => show("seq1", "https://api.example.test/seq"), 100);
+  setTimeout(() => show("held", "https://api.example.test/held"), 200);
+  setTimeout(() => show("seq2", "https://api.example.test/seq"), 3000);
+</script>

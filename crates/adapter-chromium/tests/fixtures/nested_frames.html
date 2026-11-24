@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><title>nested frames</title>
+<style>body { margin: 0; } iframe { border: 0; margin: 20px; width: 360px; height: 200px; display: block; }</style>
+<!-- `?middle=` names the middle frame's URL (another origin's); it embeds `?leaf=`. -->
+<iframe id="middle" title="Middle"></iframe>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById("middle").src = q.get("middle") + "?leaf=" + encodeURIComponent(q.get("leaf"));
+</script>

@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>Wasm context removal</title>
+<iframe id="child" src="wasm_readiness.html"></iframe>
+<script>
+window.events = [];
+setTimeout(() => events.push(['before', performance.now()]), 50);
+setTimeout(() => {
+  document.querySelector('#child').remove();
+  events.push(['removed', performance.now()]);
+}, 100);
+setTimeout(() => events.push(['after', performance.now()]), 150);
+setTimeout(() => events.push(['later', performance.now()]), 350);
+</script>

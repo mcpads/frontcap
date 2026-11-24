@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>embedded</title>
+<!-- A widget an older page embeds with `embed` (no `contentDocument`) and one with `object`. -->
+<p id="status"></p>
+<embed id="widget" src="child_frame_widget.html" type="text/html" width="400" height="120">
+<object id="legacy" data="child_frame_widget.html?legacy" type="text/html" width="400" height="120"></object>
+<script>addEventListener("message", (e) => { document.getElementById("status").textContent = e.data; });</script>
+<x-card id="card"></x-card>
+<script>
+customElements.define("x-card", class extends HTMLElement {
+  connectedCallback() { this.attachShadow({ mode: "open" }).innerHTML = '<embed id="shadowed" src="child_frame_widget.html?shadowed" type="text/html" width="400" height="120">'; }
+});
+</script>

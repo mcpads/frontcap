@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>child frames</title>
+<style>body { margin: 0; font: 14px sans-serif; } iframe { border: 2px solid #000; padding: 5px; margin: 10px; width: 320px; height: 160px; display: block; }</style>
+<p id="status">idle</p>
+<button id="top-go">Top</button>
+<!-- `?child=` names the widget's URL (another origin's, for engine patch 11). -->
+<iframe id="widget" title="Widget"></iframe>
+<iframe id="editor" title="Editor" srcdoc="<body contenteditable style='margin:0'><p id=doc>start</p></body>"></iframe>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById("widget").src = q.get("child") || "child_frame_widget.html";
+  addEventListener("message", (e) => { document.getElementById("status").textContent = String(e.data); });
+  // `?touch` reads the editor's document before its own commits (its initial empty one, whose window the
+  // editor's document then reuses), as a page hooking its editor early does.
+  if (q.has("touch")) document.getElementById("editor").contentDocument.title;
+</script>

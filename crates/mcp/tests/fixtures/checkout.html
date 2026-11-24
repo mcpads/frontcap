@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8"><title>Checkout</title>
+<p id="user" data-testid="user">Sign in</p>
+<p id="returning" data-testid="returning" hidden>Welcome back</p>
+<p id="count" data-testid="cart-count">0 items</p>
+<p id="total" data-testid="cart-total"></p>
+<label>Delivery note <input id="note"></label>
+<button id="pay">Pay</button> <button id="cancel">Cancel</button>
+<p id="status" role="status"></p>
+<script>
+  const cookies = Object.fromEntries(document.cookie.split('; ').filter(Boolean).map((c) => c.split('=')));
+  if (cookies.session) document.getElementById('user').textContent = 'Signed in as ' + cookies.session;
+  if (cookies.paid) document.getElementById('returning').hidden = false;
+  const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  // The cart renders after startup work, as a store hydrating would.
+  setTimeout(() => {
+    document.getElementById('count').textContent = cart.length + ' items';
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    document.getElementById('total').textContent = '$' + total.toFixed(2);
+    const ready = document.createElement('span');
+    ready.dataset.testid = 'cart-ready';
+    document.body.appendChild(ready);
+  }, 100);
+  let pending = null;
+  document.getElementById('pay').onclick = () => {
+    pending = new AbortController();
+    document.getElementById('status').textContent = 'Paying…';
+    const body = JSON.stringify({ items: cart.length, note: document.getElementById('note').value });
+    fetch('/api/pay', { method: 'POST', body, signal: pending.signal })
+      .then((r) => {
+        document.getElementById('status').textContent = r.ok ? 'Payment accepted' : 'Payment declined (' + r.status + ')';
+        if (r.ok) {
+          localStorage.setItem('cart', '[]');
+          document.cookie = 'paid=1; path=/';
+        }
+      })
+      .catch(() => { document.getElementById('status').textContent = 'Payment cancelled'; });
+  };
+  document.getElementById('cancel').onclick = () => { if (pending) pending.abort(); };
+</script>

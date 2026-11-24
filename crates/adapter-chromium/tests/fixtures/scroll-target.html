@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Scrolled pointer target</title>
+<style>
+  body { margin: 0; width: 2600px; height: 2600px; }
+  svg { position: absolute; left: 0; top: 0; width: 1000px; height: 900px; background: silver; }
+  #toggle, #cover { position: absolute; left: 1080px; top: 1200px; width: 32px; height: 32px; margin: 0; }
+  #cover { background: black; z-index: 2; }
+</style>
+<svg aria-label="chart"></svg>
+<input id="toggle" type="checkbox" aria-label="Automatic refresh">
+<div id="cover" hidden></div>
+<script>
+  if (location.hash === '#zoom') document.body.style.zoom = '1.25';
+  const toggle = document.getElementById('toggle');
+  toggle.addEventListener('click', e => {
+    toggle.dataset.clicks = String(Number(toggle.dataset.clicks || 0) + 1);
+    toggle.dataset.trusted = String(e.isTrusted);
+  });
+</script>

@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>presentation recovery</title>
+<style>
+html { background: rgb(255,0,0); }
+body { margin: 0; }
+button { position: absolute; left: 100px; top: 100px; }
+</style>
+<button id="change">Change background</button>
+<script>
+document.getElementById('change').onclick = () => {
+  document.documentElement.style.background = 'rgb(0,255,0)';
+};
+</script>

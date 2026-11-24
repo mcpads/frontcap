@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="dev.frontcap.queue">
+  <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="35"/>
+  <application android:label="Broadcast queue diagnostic" android:debuggable="true" android:allowBackup="false">
+    <receiver android:name=".QueueBlocker$R0" android:process=":q0" android:exported="true" android:permission="android.permission.DUMP"/>
+    <receiver android:name=".QueueBlocker$R1" android:process=":q1" android:exported="true" android:permission="android.permission.DUMP"/>
+    <receiver android:name=".QueueBlocker$R2" android:process=":q2" android:exported="true" android:permission="android.permission.DUMP"/>
+    <receiver android:name=".QueueBlocker$R3" android:process=":q3" android:exported="true" android:permission="android.permission.DUMP"/>
+  </application>
+</manifest>

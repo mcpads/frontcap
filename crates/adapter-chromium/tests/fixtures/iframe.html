@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><title>iframe</title>
+<script>
+  setTimeout(() => {
+    const f = document.createElement("iframe");
+    f.srcdoc = '<p class="target">inside the frame</p>';
+    document.body.appendChild(f);
+    const g = document.createElement("iframe");
+    g.src = "appear.html";
+    document.body.appendChild(g);
+  }, 200);
+</script>

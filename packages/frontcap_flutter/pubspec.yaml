@@ -1,0 +1,13 @@
+name: frontcap_flutter
+description: Instrumented Flutter UI-isolate testing and observed surface control.
+publish_to: none
+environment:
+  sdk: ^3.13.5
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  fake_async: 1.3.3

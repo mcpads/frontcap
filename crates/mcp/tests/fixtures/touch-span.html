@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Touches across documents</title>
+<style>body{margin:0}#pad,#top{position:absolute;left:20px;top:20px;width:200px;height:180px;background:silver;touch-action:none}iframe{position:absolute;left:300px;top:0;border:0;width:300px;height:260px}#events{position:absolute;top:280px}</style>
+<div id="pad">pad</div><output id="events">[]</output>
+<script>
+// Every pointer and touch event this document receives: its type, target, and the touch lists (or whether
+// a pointer event is the session's first contact, by the order pointer IDs appear).
+const seen=[];const ids=[];const out=document.querySelector('#events');
+const name=n=>n===document?'document':n===window?'window':(n.id||n.nodeName.toLowerCase());
+const points=list=>Array.from(list,t=>[t.identifier,Math.round(t.clientX),Math.round(t.clientY)]).sort((a,b)=>a[0]-b[0]);
+for(const type of ['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend','touchcancel'])addEventListener(type,e=>{
+  if(!e.isTrusted)return;
+  if(type.startsWith('touch'))seen.push([type,name(e.target),points(e.touches),points(e.changedTouches)]);
+  else{if(!ids.includes(e.pointerId))ids.push(e.pointerId);seen.push([type,name(e.target),ids.indexOf(e.pointerId),Math.round(e.clientX),Math.round(e.clientY)]);}
+  out.textContent=JSON.stringify(seen);
+},true);
+document.querySelector('#pad').addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+if(location.search==='?parent'){
+  document.querySelector('#pad').id='top';out.id='top-events';
+  const f=document.createElement('iframe');f.id='child';f.src=`http://localhost:${location.port}${location.pathname}`;document.body.append(f);
+}
+</script>

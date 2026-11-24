@@ -1,0 +1,23 @@
+<!doctype html><meta charset="utf-8"><title>native wheel</title>
+<style>
+body { margin: 0; }
+#outer { position: absolute; left: 20px; top: 20px; width: 240px; height: 260px; overflow: auto; }
+#inner { width: 200px; height: 160px; overflow: auto; }
+#content { height: 800px; background: linear-gradient(red, blue); }
+#tail { height: 600px; }
+#blocked { position: absolute; left: 320px; top: 20px; width: 200px; height: 160px; overflow: auto; }
+#blocked-content { height: 800px; background: gray; }
+</style>
+<div id="outer"><div id="inner"><div id="content"></div></div><div id="tail"></div></div>
+<div id="blocked"><div id="blocked-content"></div></div>
+<iframe id="child" style="position:absolute; left:600px; top:20px; width:200px; height:160px; border:0" srcdoc="<!doctype html><style>body{margin:0}</style><div id='child-content' style='height:800px;background:tan'></div><script>window.wheels=[];addEventListener('wheel',e=>wheels.push([e.deltaY,e.isTrusted]),{passive:true});</script>"></iframe>
+<script>
+window.wheels = [];
+const logWheel = e => wheels.push([e.target.id, e.deltaX, e.deltaY, e.isTrusted, e.defaultPrevented, Math.round(performance.now())]);
+document.querySelector('#inner').addEventListener('wheel', logWheel, {passive: true});
+document.querySelector('#blocked').addEventListener('wheel', e => {
+  e.preventDefault();
+  logWheel(e);
+}, {passive: false});
+setTimeout(() => document.body.dataset.timer = 'fired', 100);
+</script>

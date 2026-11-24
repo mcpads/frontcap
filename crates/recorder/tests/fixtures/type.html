@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>type</title>
+<input id="q" aria-label="Query"><p id="value"></p><p id="keys"></p>
+<script>
+  const q = document.getElementById("q");
+  q.addEventListener("input", () => { document.getElementById("value").textContent = q.value; });
+  q.addEventListener("keydown", (e) => { document.getElementById("keys").textContent += e.key; });
+</script>

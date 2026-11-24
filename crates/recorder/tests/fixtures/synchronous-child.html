@@ -1,0 +1,10 @@
+<!doctype html>
+<script>
+setTimeout(() => {
+  const request = new XMLHttpRequest();
+  request.open('GET', 'https://api.example.test/held', false);
+  let outcome;
+  try { request.send(); outcome = 'answered'; } catch (_) { outcome = 'aborted'; }
+  parent.postMessage({ source: 'synchronous-child', outcome }, '*');
+}, 10);
+</script>

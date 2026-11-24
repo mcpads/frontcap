@@ -1,0 +1,14 @@
+<!doctype html><meta charset="utf-8"><title>Navigation stops</title>
+<script>
+window.late = false;
+if (location.hash === '#arrived') {
+  window.parsed = true;
+  setTimeout(() => { late = true; }, 1);
+} else {
+  setTimeout(() => {
+    if (location.search === '?same') history.pushState({}, '', '#same');
+    else location.href = '/navigation-stop.html?arrived#arrived';
+  }, 250);
+  setTimeout(() => { late = true; }, 251);
+}
+</script>

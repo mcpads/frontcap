@@ -1,0 +1,54 @@
+{
+  "status": "ok",
+  "replayed": false,
+  "port": 41002,
+  "generation": "abcdef00-0000-4000-8000-000000000003",
+  "result": {
+    "input": "uikit_text_input",
+    "before": {
+      "end": 0,
+      "marked": false,
+      "start": 0,
+      "role": "text_field",
+      "identifier": "",
+      "label": "Field",
+      "token": "abcdef00-0000-4000-8000-000000000004",
+      "text": "",
+      "state": "focused"
+    },
+    "after": {
+      "end": 8,
+      "marked": false,
+      "start": 8,
+      "role": "text_field",
+      "identifier": "",
+      "label": "Field",
+      "token": "abcdef00-0000-4000-8000-000000000004",
+      "text": "Field 🌟",
+      "state": "focused"
+    }
+  },
+  "request": {
+    "operation": "replace_text",
+    "generation": "abcdef00-0000-4000-8000-000000000003",
+    "arguments": {
+      "text": "Field 🌟",
+      "end": 0,
+      "basis": {
+        "end": 0,
+        "marked": false,
+        "start": 0,
+        "role": "text_field",
+        "identifier": "",
+        "label": "Field",
+        "token": "abcdef00-0000-4000-8000-000000000004",
+        "text": "",
+        "state": "focused"
+      },
+      "start": 0
+    },
+    "request_id": 1
+  },
+  "last_id": 1,
+  "pid": 410
+}

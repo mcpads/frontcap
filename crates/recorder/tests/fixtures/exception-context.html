@@ -1,0 +1,6 @@
+<!doctype html><title>Collected exception context</title>
+<p id="out">waiting</p>
+<script>
+function removeFailedChild() { child.remove(); out.textContent = 'removed'; }
+</script>
+<iframe id="child" srcdoc="<script>setTimeout(() => { parent.queueMicrotask(parent.removeFailedChild); throw new Error('removed child failure'); }, 250);</script>"></iframe>

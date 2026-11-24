@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>adopt order</title>
+<script>
+  // A change at 400 ms that a watch reports, then a request at 450 ms the platform holds.
+  setTimeout(() => document.body.append(Object.assign(document.createElement("p"), { className: "late" })), 400);
+  setTimeout(() => fetch("/held").catch(() => {}), 450);
+</script>

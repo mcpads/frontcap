@@ -1,0 +1,13 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Details</title>
+<output id="state">starting</output>
+<script>
+(() => {
+  // Kept only in this window's closure.
+  let ticks = 0, secret = 0;
+  const show = () => { document.querySelector('#state').textContent = `${ticks}:${secret}`; };
+  addEventListener('message', ({data}) => { if (data === 'step') { secret++; show(); } });
+  setInterval(() => { ticks++; show(); }, 200);
+})();
+</script>
